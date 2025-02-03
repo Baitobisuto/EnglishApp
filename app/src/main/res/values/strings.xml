@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">EnglishApp</string>
+    <!--Pantalla registro-->
+    <string name="nombre">Nombre</string>
+    <string name="apellidos">Apellidos</string>
+    <string name="usuario">Usuario</string>
+    <string name="Password">Password</string>
+    <string name="Password2">Confirmar password</string>
+    <string name="Registro">REGISTRO</string>
+    <string name="boton">CREAR</string>
+    <string name="inicio">LOGIN</string>
+    <string name="botonAtras">BACK</string>
+
+    <!--Pantalla inicio sesion-->
+    <string name="UserIncio">Usuario</string>
+    <string name="Contraseña">Contraseña</string>
+    <string name="Titulo">Welcome</string>
+
+    <!--Nivel 0 vocabulario-->
+    <string name="texto">Selecciona un nivel</string>
+
+
+    <!--Nivel 1 vocabulario-->
+    <string name="nivel1">NIVEL 1</string>
+    <string name="nivel2">NIVEL 2</string>
+    <string name="nivel3">NIVEL 3</string>
+    <string name="nivel4">NIVEL 4</string>
+    <string name="nivel5">NIVEL 5</string>
+    <string name="nivel6">NIVEL 6</string>
+    <string name="selectFruit">Escribe el nombre de la fruta</string>
+    <string name="nombreFruta">Nombre de la fruta</string>
+    <string name="Comprobar">COMPROBAR</string>
+
+    <!--Nivel 2 vocabulario-->
+    <string name="CompletaFrase">Completa la frase</string>
+
+    <!--Menú-->
+    <string name="Grammar">GRAMMAR</string>
+    <string name="Vocabulary">VOCABULARY</string>
+    <string name="Reading">READING</string>
+
+    <!--Nivel 3 vocabulario-->
+    <string name="Texto">Escribe el nombre de la parte del cuerpo</string>
+    <string name="Texto2">Escribe</string>
+
+    <!--Nivel 4 vocabulario-->
+    <string name="numero">Número:</string>
+    <string name="escribeNumero">Escribe el número</string>
+
+    <!--Nivel 5 vocabulario-->
+    <string name="nombrecasa">Nombre habitación</string>
+    <string name="estancia">Cocina</string>
+
+    <!--Nivel 6 vocabulario-->
+    <string name="pregunta">Apple</string>
+</resources>

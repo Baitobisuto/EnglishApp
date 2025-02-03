@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pizarra"
+    android:padding="16dp">
+
+    <ImageButton
+        android:id="@+id/imageButton10"
+        android:layout_width="48dp"
+        android:layout_height="47dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.093"
+        app:srcCompat="@drawable/estrella" />
+
+    <ImageButton
+        android:id="@+id/imageButton11"
+        android:layout_width="48dp"
+        android:layout_height="47dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.212"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.093"
+        app:srcCompat="@drawable/estrella" />
+
+    <ImageButton
+        android:id="@+id/imageButton12"
+        android:layout_width="48dp"
+        android:layout_height="47dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.344"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.093"
+        app:srcCompat="@drawable/estrella" />
+
+    <!-- Texto de Usuario (parece innecesario en este caso) -->
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Usuario"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.035" />
+
+    <!-- Botón de Salir -->
+
+    <TextView
+        android:id="@+id/tv_puntos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="276dp"
+        android:text="Puntos: 0"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="102dp" />
+
+    <ImageButton
+        android:id="@+id/bt_exit3"
+        android:layout_width="89dp"
+        android:layout_height="70dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="16dp"
+        android:background="@android:color/transparent"
+        android:onClick="botonExit"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/back" />
+
+    <TextView
+        android:id="@+id/tv_frase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="The cat is ___ the table"
+        android:textColor="@color/white"
+        android:fontFamily="@font/mogra"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.211" />
+
+    <!-- Imagen del gato -->
+
+    <!-- Botones de respuesta -->
+
+    <ImageView
+        android:id="@+id/iv_imagen"
+        android:layout_width="316dp"
+        android:layout_height="184dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.539"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.466"
+        app:srcCompat="@drawable/gato1" />
+
+    <Button
+        android:id="@+id/bt_option2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="verificarRespuesta"
+        android:text="UNDER"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.638"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="454dp" />
+
+    <Button
+        android:id="@+id/bt_option1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="verificarRespuesta"
+        android:text="ON"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.285"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="452dp" />
+
+    <Button
+        android:id="@+id/bt_option4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="80dp"
+        android:onClick="verificarRespuesta"
+        android:text="SLEEPING"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteY="518dp" />
+
+    <Button
+        android:id="@+id/bt_option3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="verificarRespuesta"
+        android:text="IN"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.285"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="516dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
