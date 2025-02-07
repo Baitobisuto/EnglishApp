@@ -3,7 +3,6 @@ package com.example.englishapp;
 import android.os.StrictMode;
 import android.util.Log;
 
-
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
@@ -73,8 +72,8 @@ public class SQLDatabaseManager {
      */
     public static Connection connect() throws SQLException {
         JSch jsch = new JSch();
-        //StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        //StrictMode.setThreadPolicy(policy);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         try {
             // Agregar clave privada

@@ -15,14 +15,14 @@
         android:theme="@style/Theme.EnglishApp"
         tools:targetApi="31">
         <activity
+            android:name=".RankingActivity"
+            android:exported="false" />
+        <activity
             android:name=".Reading.Reading2"
-            android:exported="false" >
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".Reading.Reading1"
-            android:exported="false" >
-
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".Gramatica.Gramatica5"
             android:exported="false" />
@@ -34,24 +34,16 @@
             android:exported="false" />
         <activity
             android:name=".Gramatica.Gramatica2"
-            android:exported="false" >
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".Gramatica.Gramatica1"
-            android:exported="false" >
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".Vocabulario.Vocabulario6"
-            android:exported="false">
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".Vocabulario.Vocabulario5"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false"/>
         <activity
             android:name=".Vocabulario.Vocabulario4"
             android:exported="false" />
@@ -72,12 +64,18 @@
             android:exported="false" />
         <activity
             android:name=".InicioSesion"
-            android:exported="false">
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".RegistroUsuario"
-            android:exported="false" />
+            android:exported="false">
+
+        </activity>
     </application>
 
 </manifest>

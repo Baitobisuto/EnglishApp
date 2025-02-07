@@ -1,6 +1,9 @@
 package com.example.englishapp.Vocabulario;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,19 +18,24 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.englishapp.DAO.UsuariosDAO;
 import com.example.englishapp.R;
+import com.example.englishapp.Usuario;
 
 public class Vocabulario4 extends AppCompatActivity {
 
-    private int puntos = 10;  // Puntos iniciales
-    private int vidas = 3;  // Vidas iniciales
-    private int numeroCorrecto = 1;  // El número actual que debe adivinar el jugador
+    private int puntos;
+    private int vidas;
+    private int nivelCompletado;  // Nivel completado
+    private int numeroCorrecto = 1;
     private EditText etRespuesta;
-    private TextView tvPuntos;  // TextView donde se mostrarán los puntos
-    private ImageButton[] vidasBotones;  // Arreglo de botones de vida
-    private ImageView imagenNumero;  // Imagen que representa el número a adivinar
-    private Button botonComprobar;
-    private String[] numerosEnIngles = {"one", "two", "three", "four", "five"};  // Los números en inglés
+    private TextView tvPuntos, tvUsuario;
+    private ImageButton[] vidasBotones;
+    private ImageView imagenNumero, ivAvatar;
+    private ImageButton botonComprobar;
+    private String[] numerosEnIngles = {"one", "two", "three", "four", "five"};
+    private UsuariosDAO usuariosDAO;
+    private Usuario usuario;
 
 
     @Override
@@ -40,103 +48,168 @@ public class Vocabulario4 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        usuariosDAO = new UsuariosDAO(this); // Inicializar UsuariosDAO
         inicializarVariables();
+        cargarDatosUsuario(); // Cargar datos del usuario
         configurarBotonComprobar();
-        actualizarPuntos();
     }
 
     public void inicializarVariables() {
         etRespuesta = findViewById(R.id.etRespuesta);
         tvPuntos = findViewById(R.id.tvPuntos);
+        tvUsuario = findViewById(R.id.textView5);
         imagenNumero = findViewById(R.id.imageViewNumero);
+        ivAvatar = findViewById(R.id.iv_avatar);
         botonComprobar = findViewById(R.id.id_boton);
 
-        // Inicializamos los botones de vida
         vidasBotones = new ImageButton[]{
                 findViewById(R.id.imageButton14),
                 findViewById(R.id.imageButton15),
                 findViewById(R.id.imageButton16)
         };
-
-        // Establecemos la imagen del primer número (uno)
-        imagenNumero.setImageResource(R.drawable.uno);
     }
 
-    // Método para configurar el botón de comprobar
+    public void cargarDatosUsuario() {
+        Intent intent = getIntent();
+        int idUsuario = intent.getIntExtra("idUsuario", -1);
+
+        if (idUsuario != -1) {
+            usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario);
+            if (usuario != null) {
+                puntos = usuario.getPuntuacion();
+                vidas = usuario.getVidas();
+                nivelCompletado = usuario.getNivelCompletado();
+                establecerImagenAvatar(usuario.getAvatar());
+                actualizarPuntos();
+                actualizarVidas();
+                imagenNumero.setImageResource(R.drawable.uno); // Mostrar la primera imagen
+            } else {
+                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            Toast.makeText(this, "ID de usuario no válido", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void establecerImagenAvatar(int avatar) {
+        int avatarDrawable = getAvatarDrawable(avatar);
+        if (avatarDrawable != 0) {
+            ivAvatar.setImageResource(avatarDrawable);
+        } else {
+            Toast.makeText(this, "No se ha encontrado ningún avatar", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private int getAvatarDrawable(int avatar) {
+        switch (avatar) {
+            case 0:
+                return R.drawable.spiderman;
+            case 1:
+                return R.drawable.capitanamerica;
+            case 2:
+                return R.drawable.batman;
+            case 3:
+                return R.drawable.hulk;
+            default:
+                return 0;
+        }
+    }
+
     public void configurarBotonComprobar() {
         botonComprobar.setOnClickListener(view -> comprobarRespuesta());
     }
 
-    // Método que comprueba si la respuesta es correcta
     public void comprobarRespuesta() {
-        String respuesta = etRespuesta.getText().toString().trim().toLowerCase();  // Convertir la respuesta a minúsculas
+        String respuesta = etRespuesta.getText().toString().trim().toLowerCase();
 
-        // Verificar si la respuesta es correcta
         if (respuesta.equals(numerosEnIngles[numeroCorrecto - 1])) {
-            puntos += 3;  // Si la respuesta es correcta, sumar puntos
+            puntos += 3;
             Toast.makeText(this, "¡Correcto! Puntos: " + puntos, Toast.LENGTH_SHORT).show();
-
-            // Incrementar el número y actualizar la imagen
             numeroCorrecto++;
 
-            // Cambiar la imagen para el próximo número
             if (numeroCorrecto <= numerosEnIngles.length) {
                 cambiarImagenNumero();
             } else {
-                // Si ya se han mostrado todos los números, terminar el juego
                 Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
+                // Actualizar nivel completado y guardarlo
+                nivelCompletado++;
+                usuario.setNivelCompletado(nivelCompletado);
+                usuariosDAO.actualizarUsuario(usuario);
+
+                Intent intent = new Intent(this, Menu.class);
+                intent.putExtra("idUsuario", usuario.getId());
+                startActivity(intent);
                 finish();
             }
         } else {
-            // Si la respuesta es incorrecta
             if (puntos > 3) {
-                puntos -= 3;  // Restar 3 puntos si no estamos en 0
+                puntos -= 3;
             } else {
-                puntos = 0;  // Si los puntos están en 0 o menos, dejarlos en 0
+                puntos = 0;
             }
 
-            vidas--;  // Restar una vida
+            vidas--;
             Toast.makeText(this, "Incorrecto. Puntos: " + puntos, Toast.LENGTH_SHORT).show();
+            actualizarVidas();
 
-            // Ocultar un ícono de vida
-            if (vidas >= 0) {
-                vidasBotones[vidas].setVisibility(View.INVISIBLE);
-            }
-
-            // Si el jugador se queda sin vidas, terminar el juego
             if (vidas == 0) {
                 Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
-                finish();  // Terminar la actividad
+                // Guardar puntos y vidas antes de finalizar
+                usuario.setPuntuacion(puntos);
+                usuario.setVidas(vidas);
+                usuariosDAO.actualizarUsuario(usuario);
+                finish();
             }
         }
 
-        // Limpiar el campo de texto
         etRespuesta.setText("");
-        actualizarPuntos();  // Actualizar la visualización de los puntos
+        actualizarPuntos();
+        guardarEstadoJuego();
     }
 
-    // Método para cambiar la imagen del número
     private void cambiarImagenNumero() {
         switch (numeroCorrecto) {
             case 2:
-                imagenNumero.setImageResource(R.drawable.dos);  // Cambiar imagen a "dos"
+                imagenNumero.setImageResource(R.drawable.dos);
                 break;
             case 3:
-                imagenNumero.setImageResource(R.drawable.tres);  // Cambiar imagen a "tres"
+                imagenNumero.setImageResource(R.drawable.tres);
                 break;
             case 4:
-                imagenNumero.setImageResource(R.drawable.siete);  // Cambiar imagen a "cuatro"
+                imagenNumero.setImageResource(R.drawable.cuatro);
                 break;
             case 5:
-                imagenNumero.setImageResource(R.drawable.uno);  // Cambiar imagen a "cinco"
+                imagenNumero.setImageResource(R.drawable.cinco);
                 break;
             default:
                 break;
         }
     }
 
-    // Método para actualizar el TextView de puntos
     private void actualizarPuntos() {
-        tvPuntos.setText("Puntos: " + puntos);  // Mostrar los puntos actuales en el TextView
+        tvPuntos.setText("Puntos: " + puntos);
+    }
+
+    private void actualizarVidas() {
+        for (int i = 0; i < vidasBotones.length; i++) { // Usar la longitud correcta
+            vidasBotones[i].setVisibility(i < vidas ? View.VISIBLE : View.INVISIBLE);
+        }
+    }
+
+    private void guardarEstadoJuego() {
+        if (usuario != null) {
+            usuario.setPuntuacion(puntos);
+            usuario.setVidas(vidas);
+            usuariosDAO.actualizarUsuario(usuario);
+        }
+    }
+
+    public void botonExit(View view) {
+        Intent intent = new Intent(this, Menu.class);
+        intent.putExtra("idUsuario", usuario.getId()); // Pasar ID del usuario
+        startActivity(intent);
+        finish();
     }
 }

@@ -9,19 +9,15 @@
     tools:context=".Gramatica.Gramatica5">
 
 
-    <TextView
-        android:id="@+id/tv_usuario"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Usuario"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.077"
+    <ImageView
+        android:id="@+id/iv_avatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.06" />
+        tools:srcCompat="@drawable/spiderman" />
 
     <ImageButton
         android:id="@+id/bt_back"
@@ -38,20 +34,6 @@
         app:srcCompat="@drawable/back" />
 
     <ImageButton
-        android:id="@+id/imageButton7"
-        android:layout_width="46dp"
-        android:layout_height="37dp"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.32"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.11"
-        app:srcCompat="@drawable/estrella" />
-
-    <ImageButton
         android:id="@+id/imageButton8"
         android:layout_width="48dp"
         android:layout_height="37dp"
@@ -62,7 +44,21 @@
         app:layout_constraintHorizontal_bias="0.209"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.11"
+        app:layout_constraintVertical_bias="0.131"
+        app:srcCompat="@drawable/estrella" />
+
+    <ImageButton
+        android:id="@+id/imageButton7"
+        android:layout_width="46dp"
+        android:layout_height="37dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.339"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.131"
         app:srcCompat="@drawable/estrella" />
 
     <ImageButton
@@ -76,7 +72,7 @@
         app:layout_constraintHorizontal_bias="0.072"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.11"
+        app:layout_constraintVertical_bias="0.131"
         app:srcCompat="@drawable/estrella" />
 
     <TextView
@@ -111,8 +107,8 @@
 
     <TextView
         android:id="@+id/tv_frase"
-        android:layout_width="299dp"
-        android:layout_height="79dp"
+        android:layout_width="292dp"
+        android:layout_height="83dp"
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"

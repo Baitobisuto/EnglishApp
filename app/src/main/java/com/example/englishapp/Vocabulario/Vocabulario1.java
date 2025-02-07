@@ -16,28 +16,32 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.englishapp.DAO.UsuariosDAO;
 import com.example.englishapp.Menu;
 import com.example.englishapp.Niveles;
 import com.example.englishapp.R;
+import com.example.englishapp.Usuario;
 
 public class Vocabulario1 extends AppCompatActivity {
     private int puntos;
     private int vidas;
     private int indiceFruta = 0;
-    private EditText etNombreFruta;
     private TextView tvPuntos;
     private ImageView imagen;
-    private ImageButton bt_exit, bt_ok;
     private ImageView[] iconosVidas;
+    private ImageView ivAvatar;
+    private int avatar;
+    private int idUsuario;
+    private int nivelCompletado;
 
     private int[] imagenes = {R.drawable.fresa, R.drawable.aguacate, R.drawable.manzana, R.drawable.naranja};
-    private String[] respuestasCorrectas = {"fresa", "aguacate", "manzana", "naranja"};
-    private SharedPreferences sharedPreferences; // necesario para heredar vidas y puntos en todos los juegos
+    private String[] respuestas = {"fresa", "aguacate", "manzana", "naranja"};
+    private UsuariosDAO usuariosDAO;
+    private Usuario usuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_vocabulario1);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -46,63 +50,121 @@ public class Vocabulario1 extends AppCompatActivity {
             return insets;
         });
 
+        usuariosDAO = new UsuariosDAO(this);
         inicializaVariables();
+        cargarDatosUsuario();
     }
+
+    public void cargarDatosUsuario() {
+        Intent intent = getIntent();
+        idUsuario = intent.getIntExtra("idUsuario", -1);
+
+        if (idUsuario != -1) {
+            usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario);
+            if (usuario != null) {
+                avatar = usuario.getAvatar();
+                puntos = usuario.getPuntuacion();
+                vidas = usuario.getVidas();
+                nivelCompletado = usuario.getNivelCompletado();
+
+                establecerImagenAvatar(avatar);
+                actualizarPuntos();
+                actualizarVidas();
+                imagen.setImageResource(imagenes[indiceFruta]);
+            } else {
+                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            Toast.makeText(this, "ID de usuario no válido", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+
     public void inicializaVariables() {
-        etNombreFruta = findViewById(R.id.et_NombreFruta);
         tvPuntos = findViewById(R.id.tv_puntos);
         imagen = findViewById(R.id.img_fruta);
-        bt_exit = findViewById(R.id.bt_back);
-        bt_ok = findViewById(R.id.bt_ok);
         iconosVidas = new ImageView[]{
                 findViewById(R.id.imageButton7),
                 findViewById(R.id.imageButton8),
                 findViewById(R.id.imageButton9)
         };
+        ivAvatar = findViewById(R.id.iv_avatar);
+    }
 
-        // Recuperar los puntos y las vidas desde SharedPreferences
-        sharedPreferences = getSharedPreferences("Juego", MODE_PRIVATE);
-        puntos = sharedPreferences.getInt("Puntos", 0);  // Si no existe, se inicializa en 0
-        vidas = sharedPreferences.getInt("Vidas", 3);    // Si no existe, se inicializa en 3
+    private void establecerImagenAvatar(int avatar) {
+        int avatarDrawable = getAvatarDrawable(avatar);
+        if (avatarDrawable != 0) {
+            ivAvatar.setImageResource(avatarDrawable);
+        } else {
+            Toast.makeText(this, "No se ha encontrado ningún avatar", Toast.LENGTH_SHORT).show();
+        }
+    }
 
-        // Establecer la primera fruta
-        imagen.setImageResource(imagenes[indiceFruta]);
-
-        // Actualizar puntos y vidas
-        actualizarPuntos();
-        actualizarVidas();
+    private int getAvatarDrawable(int avatar) {
+        switch (avatar) {
+            case 0:
+                return R.drawable.spiderman;
+            case 1:
+                return R.drawable.capitanamerica;
+            case 2:
+                return R.drawable.batman;
+            case 3:
+                return R.drawable.hulk;
+            default:
+                return 0;
+        }
     }
 
     public void verificarRespuesta(View view) {
+        EditText etNombreFruta = findViewById(R.id.et_NombreFruta);
         String respuesta = etNombreFruta.getText().toString().trim().toLowerCase();
-        String respuestaCorrecta = respuestasCorrectas[indiceFruta];
 
-        if (respuesta.equals(respuestaCorrecta)) {
-            puntos += 3;  // Solo sumar puntos si la respuesta es correcta
+        if (respuesta.equals(respuestas[indiceFruta])) {
+            puntos += 3;
             Toast.makeText(this, "¡Correcto!", Toast.LENGTH_SHORT).show();
             indiceFruta++;
 
             if (indiceFruta < imagenes.length) {
                 imagen.setImageResource(imagenes[indiceFruta]);
             } else {
-                Toast.makeText(this, "¡Juego terminado! Vamos al siguiente nivel!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, Niveles.class));
-                finish();  // Finalizar la actividad actual
+                Toast.makeText(this, "¡Juego terminado! Vamos al siguiente nivel.", Toast.LENGTH_SHORT).show();
+
+                nivelCompletado++; // Incrementa el nivel completado
+                usuario.setNivelCompletado(nivelCompletado); // Actualiza el objeto usuario
+                usuariosDAO.actualizarUsuario(usuario); // Actualiza la base de datos
+
+                Intent intent = new Intent(this, Niveles.class);
+                intent.putExtra("idUsuario", idUsuario);
+                startActivity(intent);
+                finish();
             }
         } else {
-            vidas--;  // Solo restar vidas, no puntos
-            Toast.makeText(this, "Incorrecto. La respuesta correcta era " + respuestaCorrecta, Toast.LENGTH_SHORT).show();
+            vidas--;
+            Toast.makeText(this, "Incorrecto", Toast.LENGTH_SHORT).show();
             actualizarVidas();
             if (vidas == 0) {
                 Toast.makeText(this, "¡Juego terminado! Has perdido.", Toast.LENGTH_SHORT).show();
-                finish();
+                guardarProgresoYFinalizar();
                 return;
             }
         }
-        // Guardar los puntos y las vidas después de cada intento
-        guardarEstadoJuego();
+
         actualizarPuntos();
-        etNombreFruta.setText("");  // Limpiar campo de texto
+        etNombreFruta.setText("");
+    }
+
+    public void guardarProgresoYFinalizar() {
+        if (idUsuario != -1 && usuario != null) {
+            usuario.setPuntuacion(puntos);
+            usuario.setVidas(vidas);
+            usuariosDAO.actualizarUsuario(usuario);
+        }
+        Intent intent = new Intent(this, Niveles.class);
+        intent.putExtra("idUsuario", idUsuario);
+        startActivity(intent);
+        finish();
     }
 
     private void actualizarPuntos() {
@@ -111,23 +173,11 @@ public class Vocabulario1 extends AppCompatActivity {
 
     private void actualizarVidas() {
         for (int i = 0; i < 3; i++) {
-            if (i < vidas) {
-                iconosVidas[i].setVisibility(View.VISIBLE);
-            } else {
-                iconosVidas[i].setVisibility(View.INVISIBLE);
-            }
+            iconosVidas[i].setVisibility(i < vidas ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
-    // Método para guardar puntos y vidas en SharedPreferences
-    private void guardarEstadoJuego() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("Puntos", puntos);  // Guardar los puntos
-        editor.putInt("Vidas", vidas);    // Guardar las vidas
-        editor.apply();  // Aplicar los cambios
-    }
-
     public void botonBack(View view) {
-        startActivity(new Intent(this, Menu.class));
+        finish();
     }
 }

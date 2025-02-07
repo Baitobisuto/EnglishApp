@@ -8,19 +8,16 @@
     android:layout_height="match_parent"
     tools:context=".Reading.Reading1">
 
-    <TextView
-        android:id="@+id/tv_usuario"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Usuario"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.077"
+    <ImageView
+        android:id="@+id/iv_avatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="32dp"
+        android:contentDescription="Avatar del usuario"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.06" />
+        tools:srcCompat="@drawable/spiderman" />
 
     <ImageButton
         android:id="@+id/bt_back"
@@ -34,20 +31,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.047"
-        app:srcCompat="@drawable/back" />
+        app:srcCompat="@drawable/back"
+        android:contentDescription="Botón volver" />
 
     <ImageButton
-        android:id="@+id/imageButton7"
-        android:layout_width="46dp"
+        android:id="@+id/imageButton9"
+        android:layout_width="50dp"
         android:layout_height="37dp"
         android:background="@android:color/transparent"
+        android:contentDescription="Vida 3"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintHorizontal_bias="0.318"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.11"
+        app:layout_constraintVertical_bias="0.134"
         app:srcCompat="@drawable/estrella" />
 
     <ImageButton
@@ -55,27 +54,29 @@
         android:layout_width="48dp"
         android:layout_height="37dp"
         android:background="@android:color/transparent"
+        android:contentDescription="Vida 2"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.209"
+        app:layout_constraintHorizontal_bias="0.206"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.11"
+        app:layout_constraintVertical_bias="0.134"
         app:srcCompat="@drawable/estrella" />
 
     <ImageButton
-        android:id="@+id/imageButton9"
-        android:layout_width="50dp"
+        android:id="@+id/imageButton7"
+        android:layout_width="46dp"
         android:layout_height="37dp"
         android:background="@android:color/transparent"
+        android:contentDescription="Vida 1"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.072"
+        app:layout_constraintHorizontal_bias="0.068"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.11"
+        app:layout_constraintVertical_bias="0.134"
         app:srcCompat="@drawable/estrella" />
 
     <TextView
@@ -162,7 +163,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/et_respuesta"
         app:layout_constraintVertical_bias="0.4"
-        app:srcCompat="@drawable/letsgo" />
+        app:srcCompat="@drawable/letsgo"
+        android:contentDescription="Botón OK" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

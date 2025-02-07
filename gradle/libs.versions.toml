@@ -10,7 +10,7 @@ constraintlayout = "2.2.0"
 glide = "4.16.0"
 
 postgresql = "42.2.5"
-jcraft = "0.2.19"
+jcraft = "0.2.23"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }

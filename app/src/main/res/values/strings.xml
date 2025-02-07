@@ -53,4 +53,25 @@
 
     <!--Nivel 6 vocabulario-->
     <string name="pregunta">Apple</string>
+
+    <string name="error_campos_vacios">Por favor, complete todos los campos.</string>
+    <string name="contraseñas_no_coinciden">Las contraseñas no coinciden.</string>
+    <string name="usuario_ya_existe">El usuario ya existe.</string>
+    <string name="selecciona_avatar">Por favor, seleccione un avatar.</string>
+    <string name="registro_exitoso">Registro exitoso.</string>
+    <string name="error_registro">Error al registrar el usuario.</string>
+    <string name="avatar_seleccionado">Avatar %d seleccionado</string>
+    <string name="credenciales_incorrectas">Credenciales incorrectas!</string>
+    <string name="Usuario_no_encontrado">Usuario no encontrado!</string>
+    <string name="selecciona_nivel">Selecciona nivel!</string>
+    <string name="game_over">GAME OVER!</string>
+    <string name="incorrecto_te_quedan_vidas">Incorrecto te quedan vidas!</string>
+    <string name="correcto">correcto!!</string>
+    <string name="juego_terminado_gramatica">juego terminado!!</string>
+    <string name="error_guardar_puntuacion">Error al guardar puntuación!!</string>
+    <string name="error_cargar_usuario">Error al cargar usuario</string>
+    <string name="error_id_usuario">Error id usuario</string>
+
+
+
 </resources>

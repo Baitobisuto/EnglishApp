@@ -6,6 +6,9 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +16,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.englishapp.DAO.UsuariosDAO;
+import com.example.englishapp.Gramatica.Gramatica1;
+import com.example.englishapp.Gramatica.Gramatica2;
+import com.example.englishapp.Reading.Reading1;
+import com.example.englishapp.Reading.Reading2;
 import com.example.englishapp.Vocabulario.Vocabulario1;
 import com.example.englishapp.Vocabulario.Vocabulario2;
 import com.example.englishapp.Vocabulario.Vocabulario3;
@@ -20,9 +28,16 @@ import com.example.englishapp.Vocabulario.Vocabulario4;
 import com.example.englishapp.Vocabulario.Vocabulario5;
 import com.example.englishapp.Vocabulario.Vocabulario6;
 
+
 public class Niveles extends AppCompatActivity {
 
-    private ImageButton bt1, bt2, bt3, bt4, bt5, bt6;
+    private ImageButton[] botonesNivel = new ImageButton[6]; // Array para los botones de nivel
+    private int nivelCompletado;
+    private int puntuacion, vidas, avatar, idUsuario; // Incluir idUsuario
+    private String nombreUsuario;
+    private TextView tvNombreUsuario, tvPuntuacion;
+    private ImageView ivAvatar, vida1, vida2, vida3;
+    private UsuariosDAO usuariosDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,111 +49,223 @@ public class Niveles extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        usuariosDAO = new UsuariosDAO(this);
         inicializarVariables();
+        cargarDatosUsuario();
         actualizarNiveles();
+        actualizarVidas();
+    }
+
+    public void cargarDatosUsuario() {
+        idUsuario = getIntent().getIntExtra("idUsuario", -1); // Obtener idUsuario del Intent
+
+        if (idUsuario != -1) {
+            Usuario usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario); // Obtener usuario de la BD
+
+            if (usuario != null) {
+                nombreUsuario = usuario.getNombre();
+                puntuacion = usuario.getPuntuacion();
+                vidas = usuario.getVidas();
+                avatar = usuario.getAvatar();
+
+                tvNombreUsuario.setText(nombreUsuario);
+                tvPuntuacion.setText(String.valueOf(puntuacion));
+                establecerImagenAvatar(avatar);
+                actualizarVidas();
+            } else {
+                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            Toast.makeText(this, "ID de usuario no encontrado", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void establecerImagenAvatar(int avatar) {
+        switch (avatar) {
+            case 0:
+                ivAvatar.setImageResource(R.drawable.spiderman);
+                break;
+            case 1:
+                ivAvatar.setImageResource(R.drawable.capitanamerica);
+                break;
+            case 2:
+                ivAvatar.setImageResource(R.drawable.batman);
+                break;
+            case 3:
+                ivAvatar.setImageResource(R.drawable.hulk);
+                break;
+            default:
+                Toast.makeText(this, R.string.selecciona_avatar, Toast.LENGTH_SHORT).show(); // Usar strings.xml
+        }
     }
 
     public void inicializarVariables() {
-        bt1 = findViewById(R.id.bt_uno);
-        bt2 = findViewById(R.id.bt_dos);
-        bt3 = findViewById(R.id.bt_tres);
-        bt4 = findViewById(R.id.bt_cuatro);
-        bt5 = findViewById(R.id.bt_cinco);
-        bt6 = findViewById(R.id.bt_seis);
+        botonesNivel[0] = findViewById(R.id.bt_uno);
+        botonesNivel[1] = findViewById(R.id.bt_dos);
+        botonesNivel[2] = findViewById(R.id.bt_tres);
+        botonesNivel[3] = findViewById(R.id.bt_cuatro);
+        botonesNivel[4] = findViewById(R.id.bt_cinco);
+        botonesNivel[5] = findViewById(R.id.bt_seis);
+
+        tvNombreUsuario = findViewById(R.id.tvNombreUsuario);
+        tvPuntuacion = findViewById(R.id.tvPuntuacion);
+        ivAvatar = findViewById(R.id.ivAvatar);
+
+        vida1 = findViewById(R.id.vida1);
+        vida2 = findViewById(R.id.vida2);
+        vida3 = findViewById(R.id.vida3);
     }
 
     public void actualizarNiveles() {
-        // Aquí controlas el desbloqueo de los niveles según el progreso.
-        int nivelCompletado = obtenerNivelCompletado();  // Este método obtiene el nivel completado
-
-        // Nivel 1: siempre desbloqueado
-        bt1.setEnabled(true);  // Nivel 1 siempre está habilitado
-        bt1.clearColorFilter();  // Quitar cualquier filtro de color (si existe)
-
-        // Nivel 2: desbloqueado si nivel 1 está completado
-        if (nivelCompletado >= 1) {
-            bt2.setEnabled(true);
-            bt2.clearColorFilter();  // Quitar filtro de color
+        Usuario usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario);
+        if (usuario != null) {
+            nivelCompletado = usuario.getNivelCompletado();
         } else {
-            bt2.setEnabled(false);
-            bt2.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);  // Aplicar filtro gris
+            nivelCompletado = 0;
         }
-
-        // Nivel 3: desbloqueado si nivel 2 está completado
-        if (nivelCompletado >= 2) {
-            bt3.setEnabled(true);
-            bt3.clearColorFilter();
-        } else {
-            bt3.setEnabled(false);
-            bt3.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-        }
-
-        // Nivel 4: desbloqueado si nivel 3 está completado
-        if (nivelCompletado >= 3) {
-            bt4.setEnabled(true);
-            bt4.clearColorFilter();
-        } else {
-            bt4.setEnabled(false);
-            bt4.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-        }
-
-        // Nivel 5: desbloqueado si nivel 4 está completado
-        if (nivelCompletado >= 4) {
-            bt5.setEnabled(true);
-            bt5.clearColorFilter();
-        } else {
-            bt5.setEnabled(false);
-            bt5.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-        }
-
-        // Nivel 6: desbloqueado si nivel 5 está completado
-        if (nivelCompletado >= 5) {
-            bt6.setEnabled(true);
-            bt6.clearColorFilter();
-        } else {
-            bt6.setEnabled(false);
-            bt6.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+        for (int i = 2; i < botonesNivel.length; i++) {
+            actualizarNivel(botonesNivel[nivelCompletado], i + 1 );
         }
     }
 
-    public int obtenerNivelCompletado() {
-        // Este es un ejemplo, puedes usar SharedPreferences para obtener el último nivel completado.
-        return getSharedPreferences("Juego", MODE_PRIVATE).getInt("NivelCompletado", 0);
+
+    public void actualizarNivel(ImageButton boton, int nivel) {
+        boolean habilitado = nivelCompletado >= nivel-1;
+        boton.setEnabled(habilitado);
+
+        if (nivel != 1) { // Si no es el nivel 1, entonces busca el candado
+            ImageView candado = null;
+
+            switch (nivel) {
+                case 2:
+                    candado = boton.findViewById(R.id.c2);
+                    break;
+                case 3:
+                    candado = boton.findViewById(R.id.c3);
+                    break;
+                case 4:
+                    candado = boton.findViewById(R.id.c4);
+                    break;
+                case 5:
+                    candado = boton.findViewById(R.id.c5);
+                    break;
+                case 6:
+                    candado = boton.findViewById(R.id.c6);
+                    break;
+                default:
+                    Toast.makeText(this, "Candados no encontrados", Toast.LENGTH_SHORT).show();
+            }
+
+            if (candado != null) {
+                if (habilitado) {
+                    boton.clearColorFilter();
+                    candado.setVisibility(View.INVISIBLE);
+                } else {
+                    boton.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+                    candado.setVisibility(View.VISIBLE);
+                }
+            } else {
+                Toast.makeText(this, "Candado no encontrado para el nivel " + nivel, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
-    // Métodos para cambiar de nivel
-    public void cambiarNivelUno(View view) {
-        Intent intent = new Intent(Niveles.this, Vocabulario1.class);
-        startActivity(intent);
+    public void actualizarVidas() {
+        vida1.setVisibility(vidas >= 1 ? View.VISIBLE : View.INVISIBLE);
+        vida2.setVisibility(vidas >= 2 ? View.VISIBLE : View.INVISIBLE);
+        vida3.setVisibility(vidas >= 3 ? View.VISIBLE : View.INVISIBLE);
     }
 
-    public void cambiarNivelDos(View view) {
-        Intent intent = new Intent(Niveles.this, Vocabulario2.class);
-        startActivity(intent);
-    }
+    public void iniciarNivel(View view) {
+        Intent intent = null;
+        int nivel = -1;
 
-    public void cambiarNivelTres(View view) {
-        Intent intent = new Intent(Niveles.this, Vocabulario3.class);
-        startActivity(intent);
-    }
+        if (view != null) {
+            int viewId = view.getId();
 
-    public void cambiarNivelCuatro(View view) {
-        Intent intent = new Intent(Niveles.this, Vocabulario4.class);
-        startActivity(intent);
-    }
+            for (int i = 0; i < botonesNivel.length; i++) {
+                if (viewId == botonesNivel[i].getId()) {
+                    nivel = i + 1;
+                    break;
+                }
+            }
 
-    public void cambiarNivelCinco(View view) {
-        Intent intent = new Intent(Niveles.this, Vocabulario5.class);
-        startActivity(intent);
-    }
+            if (nivel != -1) {
+                String tipoNivel = getIntent().getStringExtra("tipo_nivel");
 
-    public void cambiarNivelSeis(View view) {
-        Intent intent = new Intent(Niveles.this, Vocabulario6.class);
-        startActivity(intent);
+                if (tipoNivel != null) {
+                    switch (tipoNivel) {
+                        case "reading":
+                            switch (nivel) {
+                                case 1:
+                                    intent = new Intent(Niveles.this, Reading1.class);
+                                    break;
+                                case 2:
+                                    intent = new Intent(Niveles.this, Reading2.class);
+                                    break;
+                            }
+                            break;
+                        case "grammar":
+                            switch (nivel) {
+                                case 1:
+                                    intent = new Intent(Niveles.this, Gramatica1.class);
+                                    break;
+                                case 2:
+                                    intent = new Intent(Niveles.this, Gramatica2.class);
+                                    break;
+                                // ... (cases para los demás niveles de gramática)
+                            }
+                            break;
+                        case "vocabulary":
+                            switch (nivel) {
+                                case 1:
+                                    intent = new Intent(Niveles.this, Vocabulario1.class);
+                                    break;
+                                case 2:
+                                    intent = new Intent(Niveles.this, Vocabulario2.class);
+                                    break;
+                                case 3:
+                                    intent = new Intent(Niveles.this, Vocabulario3.class);
+                                    break;
+                                case 4:
+                                    intent = new Intent(Niveles.this, Vocabulario4.class);
+                                    break;
+                                case 5:
+                                    intent = new Intent(Niveles.this, Vocabulario5.class);
+                                    break;
+                                case 6:
+                                    intent = new Intent(Niveles.this, Vocabulario6.class);
+                                    break;
+                            }
+                            break;
+                    }
+                }
+            } else {
+                Toast.makeText(this, R.string.selecciona_nivel, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (intent != null) {
+                intent.putExtra("idUsuario", idUsuario);
+                intent.putExtra("nivel", nivel);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, R.string.selecciona_nivel, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public void back(View view) {
         Intent intent = new Intent(this, Menu.class);
+        intent.putExtra("idUsuario", idUsuario);
         startActivity(intent);
     }
 }

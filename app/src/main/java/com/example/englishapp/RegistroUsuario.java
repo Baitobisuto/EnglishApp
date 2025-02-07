@@ -16,12 +16,10 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.englishapp.DAO.UsuariosDAO;
 
-import java.sql.Connection;
 
 public class RegistroUsuario extends AppCompatActivity {
 
     private EditText etNom, etApe, etUser, etPass, etPass2;
-    private ConexionMethods conexion;
     private ImageButton[] avatares;
     private int avatarSeleccionado = -1;
     private UsuariosDAO usuariosDAO;
@@ -38,9 +36,8 @@ public class RegistroUsuario extends AppCompatActivity {
             return insets;
         });
         inicializarVariables();
-        conexion = new ConexionMethods();
         inicializarAvatares();
-        usuariosDAO = new UsuariosDAO();
+        usuariosDAO = new UsuariosDAO(this);
     }
 
     public void crearTablas(View view){
@@ -57,62 +54,65 @@ public class RegistroUsuario extends AppCompatActivity {
 
     private void inicializarAvatares() {
         avatares = new ImageButton[]{
-                findViewById(R.id.imageButton30),
-                findViewById(R.id.imageButton31),
-                findViewById(R.id.imageButton32),
-                findViewById(R.id.imageButton33)
+                findViewById(R.id.imageButton30),//Batman
+                findViewById(R.id.imageButton31),// Hulk
+                findViewById(R.id.imageButton32),// Capitán América
+                findViewById(R.id.imageButton33) // Thor
         };
 
         for (int i = 0; i < avatares.length; i++) {
-            final int indice = i; // Necesario para usar 'i' dentro de la clase interna
-
-            avatares[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Restablecer el color de fondo del avatar previamente seleccionado (si hay uno)
-                    if (avatarSeleccionado != -1) {
-                        avatares[avatarSeleccionado].setBackgroundColor(Color.TRANSPARENT);
-                    }
-
-                    avatarSeleccionado = indice;
-                    // Resaltar el avatar seleccionado (ejemplo: cambiar el color de fondo)
-                    avatares[avatarSeleccionado].setBackgroundColor(Color.LTGRAY);
-
-                    Toast.makeText(RegistroUsuario.this, "Avatar " + (indice + 1) + " seleccionado", Toast.LENGTH_SHORT).show();
+            final int indice = i;
+            avatares[i].setOnClickListener(v -> {
+                if (avatarSeleccionado != -1) {
+                    avatares[avatarSeleccionado].setBackgroundColor(Color.GRAY);
                 }
+
+                avatarSeleccionado = indice;
+                avatares[avatarSeleccionado].setBackgroundColor(Color.RED);
             });
         }
     }
 
     public void registroUsuario(View view) {
-        String name = etNom.getText().toString();
-        String lastname = etApe.getText().toString();
-        String username = etUser.getText().toString();
-        String password = etPass.getText().toString();
-        String passwd2 = etPass2.getText().toString();
+        String name = etNom.getText().toString().trim();
+        String lastname = etApe.getText().toString().trim();
+        String username = etUser.getText().toString().trim();
+        String password = etPass.getText().toString().trim();
+        String password2 = etPass2.getText().toString().trim(); // Obtener la confirmación de contraseña
 
-        if (name.isEmpty() || password.isEmpty() || passwd2.isEmpty() || lastname.isEmpty() || username.isEmpty()) {
-            Toast.makeText(this, "Por favor, completa todos los campos.", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || lastname.isEmpty() || username.isEmpty() || password.isEmpty() || password2.isEmpty()) {
+            Toast.makeText(this, R.string.error_campos_vacios, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!password.equals(passwd2)) {
-            Toast.makeText(this, "Las contraseñas no coinciden.", Toast.LENGTH_SHORT).show();
+        if (!password.equals(password2)) { // Validar que las contraseñas coincidan
+            Toast.makeText(this, R.string.contraseñas_no_coinciden, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (usuariosDAO.usuarioExiste(username)) {
-            Toast.makeText(this, "El usuario ya existe.", Toast.LENGTH_SHORT).show();
-        } else {
-            boolean okCreate = usuariosDAO.registrarUsuario(name, lastname, username, password);
-            if (okCreate) {
-                Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(RegistroUsuario.this, InicioSesion.class);
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(this, "Error al registrar el usuario.", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(this, R.string.usuario_ya_existe, Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        if (avatarSeleccionado == -1) {
+            Toast.makeText(this, R.string.selecciona_avatar, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        boolean okCreate = usuariosDAO.registrarUsuario(username, password, name, lastname, avatarSeleccionado);
+        if (okCreate) {
+            Toast.makeText(this, R.string.registro_exitoso, Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(RegistroUsuario.this, InicioSesion.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Toast.makeText(this, R.string.error_registro, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void botonExit(View view) {
+        Intent intent = new Intent(RegistroUsuario.this, InicioSesion.class);
+        startActivity(intent);
     }
 }

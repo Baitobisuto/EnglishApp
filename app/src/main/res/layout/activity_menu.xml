@@ -7,107 +7,91 @@
     android:layout_height="match_parent"
     android:layout_gravity="center"
     android:background="@drawable/pizarra"
-    android:orientation="vertical"
-    tools:context=".Menu"
-    tools:layout_editor_absoluteX="0dp"
-    tools:layout_editor_absoluteY="20dp">
+    tools:context=".Menu">
+
+    <ImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="33dp"
+        android:layout_height="38dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.084"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.051"
+        tools:src="@drawable/spiderman" />
 
     <ImageButton
         android:id="@+id/bt_back"
         android:layout_width="94dp"
         android:layout_height="43dp"
-        android:layout_alignParentTop="true"
         android:layout_margin="16dp"
         android:background="@android:color/transparent"
         android:onClick="botonExit"
         android:scaleType="fitCenter"
+        android:src="@drawable/back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.949"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.03"
-        app:srcCompat="@drawable/back" />
+        app:layout_constraintVertical_bias="0.03" />
 
-    <ImageButton
-        android:id="@+id/bt_reading"
-        android:layout_width="169dp"
-        android:layout_height="144dp"
-        android:background="@mipmap/reading"
-        android:onClick="botonReading"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.52"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.8" />
-
-    <ImageButton
-        android:id="@+id/bt_grammar"
-        android:layout_width="169dp"
-        android:layout_height="144dp"
-        android:background="@mipmap/grammar"
-        android:onClick="botonReading"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.499" />
-
-    <ImageButton
+    <ImageView
         android:id="@+id/imageButton3"
-        android:layout_width="48dp"
-        android:layout_height="47dp"
-        android:background="@null"
+        android:layout_width="35dp"
+        android:layout_height="37dp"
         android:scaleType="fitCenter"
+        android:src="@drawable/estrella"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.079"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.093"
-        app:srcCompat="@drawable/estrella" />
+        app:layout_constraintVertical_bias="0.115"
+        tools:ignore="SpeakableTextPresentCheck" />
 
-    <ImageButton
-        android:id="@+id/imageButton2"
-        android:layout_width="48dp"
-        android:layout_height="47dp"
-        android:background="@null"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.344"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.093"
-        app:srcCompat="@drawable/estrella" />
-
-    <ImageButton
+    <ImageView
         android:id="@+id/imageButton4"
-        android:layout_width="48dp"
-        android:layout_height="47dp"
-        android:background="@null"
+        android:layout_width="36dp"
+        android:layout_height="37dp"
         android:scaleType="fitCenter"
+        android:src="@drawable/estrella"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.212"
+        app:layout_constraintHorizontal_bias="0.173"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.093"
-        app:srcCompat="@drawable/estrella" />
+        app:layout_constraintVertical_bias="0.115"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <ImageView
+        android:id="@+id/imageButton2"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/estrella"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.268"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.116"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvPuntos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Usuario"
+        android:text="0"
         android:textColor="@color/white"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintHorizontal_bias="0.843"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.035" />
+        app:layout_constraintVertical_bias="0.133" />
 
     <ImageButton
         android:id="@+id/bt_vocabulary"
@@ -116,11 +100,42 @@
         android:background="@null"
         android:onClick="botonVocabulary"
         android:scaleType="fitCenter"
+        android:src="@mipmap/vocabulary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.228"
-        app:srcCompat="@mipmap/vocabulary" />
+        app:layout_constraintVertical_bias="0.253"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <ImageButton
+        android:id="@+id/bt_reading"
+        android:layout_width="169dp"
+        android:layout_height="144dp"
+        android:background="@null"
+        android:onClick="botonReading"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/reading"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.797"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <ImageButton
+        android:id="@+id/bt_grammar"
+        android:layout_width="169dp"
+        android:layout_height="144dp"
+        android:background="@null"
+        android:onClick="botonGrammar"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/grammar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.524"
+        tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

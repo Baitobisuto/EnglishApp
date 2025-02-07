@@ -15,19 +15,21 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.englishapp.ConexionMethods;
+import com.example.englishapp.DAO.UsuariosDAO;
 import com.example.englishapp.Menu;
 import com.example.englishapp.R;
+import com.example.englishapp.Usuario;
 
 public class Gramatica1 extends AppCompatActivity {
 
     private TextView tvUsuario, tvPuntos, tvFrase;
     private EditText etRespuesta;
-    private ImageButton[] vidas;
-    private ImageButton btBack, btOk;
-    private ConexionMethods conexion;
-    private int puntos = 0;
-    private int vidasRestantes = 3;
-    private String usuario;
+    private ImageButton[] vidas = new ImageButton[3];
+    private int puntuacion, vidasRestantes, avatar, idUsuario;
+    private String nombreUsuario;
+    private int fraseActual = 0;
+    private UsuariosDAO usuariosDAO;
+
     private String[] frases = {
             "I ____ to the store yesterday.", // went
             "She ____ a book every week.", // reads
@@ -42,7 +44,6 @@ public class Gramatica1 extends AppCompatActivity {
             "ate",
             "are going"
     };
-    private int fraseActual = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,61 +57,62 @@ public class Gramatica1 extends AppCompatActivity {
         });
 
         inicializarVariables();
-        conexion = new ConexionMethods();
+        usuariosDAO = new UsuariosDAO(this); // Inicializar UsuariosDAO
+        cargarDatosUsuario();
         cargarFrase();
     }
+
+    private void cargarDatosUsuario() {
+        idUsuario = getIntent().getIntExtra("idUsuario", -1);
+
+        if (idUsuario != -1) {
+            Usuario usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario);
+
+            if (usuario != null) {
+                nombreUsuario = usuario.getNombre();
+                puntuacion = usuario.getPuntuacion();
+                vidasRestantes = usuario.getVidas();
+                avatar = usuario.getAvatar();
+
+                tvUsuario.setText(nombreUsuario);
+                tvPuntos.setText(String.valueOf(puntuacion));
+                actualizarVidas();
+            } else {
+                Toast.makeText(this, R.string.error_cargar_usuario, Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            Toast.makeText(this, R.string.error_id_usuario, Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
 
     private void inicializarVariables() {
         tvUsuario = findViewById(R.id.tv_usuario);
         tvPuntos = findViewById(R.id.tv_puntos);
         tvFrase = findViewById(R.id.tv_frase);
         etRespuesta = findViewById(R.id.et_respuesta);
-        vidas = new ImageButton[]{
-                findViewById(R.id.imageButton7),
-                findViewById(R.id.imageButton8),
-                findViewById(R.id.imageButton9)
-        };
-        btBack = findViewById(R.id.bt_back);
-        btOk = findViewById(R.id.bt_ok);
 
-        // Obtener el nombre de usuario (puedes pasarlo desde la actividad anterior)
-        usuario = getIntent().getStringExtra("username"); // Reemplazar "username" con la clave correcta
-        if (usuario != null) {
-            tvUsuario.setText(usuario);
-        }
+        vidas[0] = findViewById(R.id.imageButton7);
+        vidas[1] = findViewById(R.id.imageButton8);
+        vidas[2] = findViewById(R.id.imageButton9);
 
-        tvPuntos.setText(String.valueOf(puntos));
+        ImageButton btBack = findViewById(R.id.bt_back);
+        ImageButton btOk = findViewById(R.id.bt_ok);
 
-        btBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                botonBack();
-            }
-        });
-
-        btOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                verificarRespuesta();
-            }
-        });
-
-        for (ImageButton vida : vidas) {
-            vida.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                }
-            });
-        }
+        btBack.setOnClickListener(v -> botonBack());
+        btOk.setOnClickListener(v -> verificarRespuesta());
     }
 
     private void cargarFrase() {
-        if (fraseActual < frases.length) {
+        if (fraseActual < frases.length && vidasRestantes > 0) {
             tvFrase.setText(frases[fraseActual]);
-            etRespuesta.setText(""); // Limpia el EditText
+            etRespuesta.setText("");
         } else {
-            Toast.makeText(this, "Juego terminado. Puntuación final: " + puntos, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.juego_terminado_gramatica + puntuacion), Toast.LENGTH_SHORT).show();
+            guardarPuntuacion();
+            finish();
         }
     }
 
@@ -119,28 +121,42 @@ public class Gramatica1 extends AppCompatActivity {
         String respuestaCorrecta = respuestas[fraseActual].toLowerCase();
 
         if (respuestaUsuario.equals(respuestaCorrecta)) {
-            puntos++;
-            tvPuntos.setText(String.valueOf(puntos));
-            Toast.makeText(this, "¡Correcto!", Toast.LENGTH_SHORT).show();
+            puntuacion += 10;
+            tvPuntos.setText(String.valueOf(puntuacion));
+            Toast.makeText(this, R.string.correcto, Toast.LENGTH_SHORT).show();
             fraseActual++;
             cargarFrase();
         } else {
             vidasRestantes--;
+            actualizarVidas();
             if (vidasRestantes >= 0) {
-                vidas[vidasRestantes].setVisibility(View.INVISIBLE);
-                Toast.makeText(this, "Incorrecto. Te quedan " + (vidasRestantes + 1) + " vidas.", Toast.LENGTH_SHORT).show();
-                if (vidasRestantes == 0) {
-                    Toast.makeText(this, "¡Game Over!", Toast.LENGTH_SHORT).show();
-                    // Puedes mostrar un diálogo, reiniciar el juego, etc.
-                    finish(); // Cierra la actividad actual
-                }
+                Toast.makeText(this, getString(R.string.incorrecto_te_quedan_vidas + vidasRestantes + 1), Toast.LENGTH_SHORT).show();
+            }
+            if (vidasRestantes == 0) {
+                Toast.makeText(this, R.string.game_over, Toast.LENGTH_SHORT).show();
+                guardarPuntuacion();
+                finish();
             }
         }
     }
 
+    private void guardarPuntuacion() {
+        boolean actualizado = usuariosDAO.actualizarPuntuacion(idUsuario, puntuacion);
+
+        if (!actualizado) {
+            Toast.makeText(this, R.string.error_guardar_puntuacion, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void actualizarVidas() {
+        for (int i = 0; i < vidas.length; i++) {
+            vidas[i].setVisibility(i < vidasRestantes ? View.VISIBLE : View.INVISIBLE);
+        }
+    }
 
     public void botonBack() {
         Intent intent = new Intent(this, Menu.class);
+        intent.putExtra("idUsuario", idUsuario);
         startActivity(intent);
         finish();
     }

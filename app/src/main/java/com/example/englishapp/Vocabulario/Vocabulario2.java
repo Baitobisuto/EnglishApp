@@ -1,7 +1,8 @@
 package com.example.englishapp.Vocabulario;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -11,18 +12,23 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.englishapp.DAO.UsuariosDAO;
 import com.example.englishapp.R;
+import com.example.englishapp.Usuario;
 
 public class Vocabulario2 extends AppCompatActivity {
 
     private ImageView imagen;
-    private TextView frase, tvPuntos;
+    private TextView frase, tvPuntos, tvUsuario;
+    private ImageView ivAvatar;
     private int indiceActual = 0;
     private int puntos;
     private int vidas;
+    private int nivelCompletado; // Nuevo: Nivel completado
     private Button[] botonesRespuesta;
-    private ImageButton[] botonVidas; // Los botones que representan las vidas
-    private SharedPreferences sharedPreferences;
+    private ImageButton[] botonVidas;
+    private UsuariosDAO usuariosDAO;
+    private Usuario usuario;
 
     // Las imágenes y las respuestas correspondientes (verbos y preposiciones)
     private int[] imagenes = {R.drawable.gato1, R.drawable.gato2, R.drawable.gato3, R.drawable.gato4}; // Gato debajo de la mesa, durmiendo, saltando, encima de la mesa
@@ -45,20 +51,19 @@ public class Vocabulario2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vocabulario2);
 
-        sharedPreferences = getSharedPreferences("Juego", MODE_PRIVATE);
-        puntos = sharedPreferences.getInt("Puntos", 0);  // Recuperar puntos guardados
-        vidas = sharedPreferences.getInt("Vidas", 3);    // Recuperar vidas guardadas
-
+        usuariosDAO = new UsuariosDAO(this);
         inicializarElementos();
-        mostrarPreguntas();
+        cargarDatosUsuario();
     }
 
     public void inicializarElementos() {
         imagen = findViewById(R.id.iv_imagen);
         frase = findViewById(R.id.tv_frase);
         tvPuntos = findViewById(R.id.tv_puntos);
+        tvUsuario = findViewById(R.id.tv_usuario);
+        ivAvatar = findViewById(R.id.iv_avatar);
 
-        botonesRespuesta = new Button[] {
+        botonesRespuesta = new Button[]{
                 findViewById(R.id.bt_option1),
                 findViewById(R.id.bt_option2),
                 findViewById(R.id.bt_option3),
@@ -72,15 +77,61 @@ public class Vocabulario2 extends AppCompatActivity {
         };
     }
 
+    public void cargarDatosUsuario() {
+        Intent intent = getIntent();
+        int idUsuario = intent.getIntExtra("idUsuario", -1); // Obtener ID del usuario
+
+        if (idUsuario != -1) {
+            usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario); // Obtener usuario por ID
+            if (usuario != null) {
+                puntos = usuario.getPuntuacion();
+                vidas = usuario.getVidas();
+                nivelCompletado = usuario.getNivelCompletado(); // Cargar nivel completado
+                establecerImagenAvatar(usuario.getAvatar()); // Establecer avatar
+                actualizarPuntos();
+                actualizarVidas();
+                mostrarPreguntas(); // Mostrar las preguntas después de cargar los datos
+            } else {
+                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            Toast.makeText(this, "ID de usuario no válido", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void establecerImagenAvatar(int avatar) {
+        int avatarDrawable = getAvatarDrawable(avatar);
+        if (avatarDrawable != 0) {
+            ivAvatar.setImageResource(avatarDrawable);
+        } else {
+            Toast.makeText(this, "No se ha encontrado ningún avatar", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private int getAvatarDrawable(int avatar) {
+        switch (avatar) {
+            case 0:
+                return R.drawable.spiderman;
+            case 1:
+                return R.drawable.capitanamerica;
+            case 2:
+                return R.drawable.batman;
+            case 3:
+                return R.drawable.hulk;
+            default:
+                return 0;
+        }
+    }
     public void mostrarPreguntas() {
         if (indiceActual < frases.length) {
             frase.setText(frases[indiceActual]);
             imagen.setImageResource(imagenes[indiceActual]);
-
-            // Actualizar las respuestas según la imagen actual
             String[] opcionesRespuesta = respuestas[indiceActual];
             for (int i = 0; i < botonesRespuesta.length; i++) {
                 botonesRespuesta[i].setText(opcionesRespuesta[i]);
+
             }
         } else {
             Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
@@ -93,7 +144,7 @@ public class Vocabulario2 extends AppCompatActivity {
 
         // Verificar si la respuesta seleccionada es correcta
         if (respuestas[indiceActual][0].equalsIgnoreCase(respuestaSeleccionada)) {
-            puntos += 5;
+            puntos += 3;
             Toast.makeText(this, "¡Correcto! Puntos: " + puntos, Toast.LENGTH_SHORT).show();
             actualizarPuntos();
             indiceActual++;
@@ -104,11 +155,10 @@ public class Vocabulario2 extends AppCompatActivity {
                 finish();
             }
         } else {
-            // Restar solo vidas, no puntos
+
             vidas--;
             Toast.makeText(this, "¡Incorrecto! Inténtalo de nuevo. Vidas restantes: " + vidas, Toast.LENGTH_SHORT).show();
 
-            // Ocultar el ícono de vida correspondiente
             if (vidas > 0) {
                 botonVidas[vidas].setVisibility(View.INVISIBLE);
             }
@@ -127,11 +177,30 @@ public class Vocabulario2 extends AppCompatActivity {
         tvPuntos.setText("Puntos: " + puntos);
     }
 
-    // Método para guardar puntos y vidas en SharedPreferences
+    private void actualizarVidas() {
+        for (int i = 0; i < 3; i++) {
+            if (i < vidas) {
+                botonVidas[i].setVisibility(View.VISIBLE);
+            } else {
+                botonVidas[i].setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
     private void guardarEstadoJuego() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("Puntos", puntos);  // Guardar los puntos
-        editor.putInt("Vidas", vidas);    // Guardar las vidas
-        editor.apply();  // Aplicar los cambios
+        if (usuario != null) { // Usar el objeto Usuario
+            usuario.setPuntuacion(puntos);
+            usuario.setVidas(vidas);
+            // Actualizar nivel completado si es necesario (ej. al final del juego)
+            // usuario.setNivelCompletado(nivelCompletado);
+            usuariosDAO.actualizarUsuario(usuario); // Actualizar el usuario en la base de datos
+        }
+    }
+
+    public void botonExit(View view) {
+        Intent intent = new Intent(this, Menu.class);
+        intent.putExtra("idUsuario", usuario.getId()); // Pasar el ID del usuario al menú
+        startActivity(intent);
+        finish();
     }
 }

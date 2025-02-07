@@ -1,9 +1,9 @@
 package com.example.englishapp.Reading;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,19 +14,23 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.englishapp.DAO.UsuariosDAO;
 import com.example.englishapp.Menu;
 import com.example.englishapp.R;
+import com.example.englishapp.Usuario;
 
 public class Reading2 extends AppCompatActivity {
 
-    private TextView tvUsuario, tvPuntos, tvPregunta;
+    private TextView tvPuntos, tvPregunta;
     private ImageView ivImagen1, ivImagen2, ivImagen3, ivImagen4;
+    private ImageButton[] vidas; // Array de ImageButton para las vidas
     private int puntos = 0;
     private int vidasRestantes = 3;
-    private String usuario;
-    private SharedPreferences sharedPreferences;
+    private UsuariosDAO usuariosDAO; // Instancia de UsuariosDAO
+    private Usuario usuario; // Instancia de Usuario
+
     private int[] imagenesGato = {
-            R.drawable.gato1,  // Reemplaza con tus recursos de imagen reales
+            R.drawable.gato1,
             R.drawable.gato2,
             R.drawable.gato3,
             R.drawable.gato4
@@ -39,8 +43,9 @@ public class Reading2 extends AppCompatActivity {
             "What is the cat doing?"
     };
 
-    private int respuestaCorrecta = 0; // Índice de la imagen correcta (0-3)
+    private int respuestaCorrecta = 0;
     private int preguntaActual = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,26 +57,56 @@ public class Reading2 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        sharedPreferences = getSharedPreferences("Juego", MODE_PRIVATE);
-        puntos = sharedPreferences.getInt("Puntos", 0);
+        usuariosDAO = new UsuariosDAO(this); // Inicializa UsuariosDAO
 
         inicializarVariables();
+        cargarDatosUsuario(); // Carga datos del usuario desde la BD
         cargarPregunta();
     }
 
-    private void inicializarVariables() {
-        tvUsuario = findViewById(R.id.tv_usuario);
+    public void cargarDatosUsuario() {
+        Intent intent = getIntent();
+        int idUsuario = intent.getIntExtra("idUsuario", -1);
+
+        if (idUsuario != -1) {
+            usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario);
+            if (usuario != null) {
+                puntos = usuario.getPuntuacion();
+                vidasRestantes = usuario.getVidas();
+                actualizarPuntos();
+                actualizarVidas();
+            } else {
+                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            Toast.makeText(this, "ID de usuario no válido", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    public void actualizarPuntos() {
+        tvPuntos.setText(String.valueOf(puntos));
+    }
+
+    public void actualizarVidas() {
+        for (int i = 0; i < vidas.length; i++) {
+            vidas[i].setVisibility(i < vidasRestantes ? View.VISIBLE : View.INVISIBLE);
+        }
+    }
+
+    public void inicializarVariables() {
         tvPuntos = findViewById(R.id.tv_puntos);
         tvPregunta = findViewById(R.id.tv_pregunta);
         ivImagen1 = findViewById(R.id.iv_imagen1);
         ivImagen2 = findViewById(R.id.iv_imagen2);
         ivImagen3 = findViewById(R.id.iv_imagen3);
         ivImagen4 = findViewById(R.id.iv_imagen4);
-
-        usuario = getIntent().getStringExtra("username");
-        if (usuario != null) {
-            tvUsuario.setText(usuario);
-        }
+        vidas = new ImageButton[]{
+                findViewById(R.id.imageButton7),
+                findViewById(R.id.imageButton8),
+                findViewById(R.id.imageButton9)
+        };
 
         tvPuntos.setText(String.valueOf(puntos));
 
@@ -111,7 +146,7 @@ public class Reading2 extends AppCompatActivity {
         });
     }
 
-    private void cargarPregunta() {
+    public void cargarPregunta() {
         if (preguntaActual < preguntasGato.length) {
             tvPregunta.setText(preguntasGato[preguntaActual]);
             ivImagen1.setImageResource(imagenesGato[0]);
@@ -119,31 +154,37 @@ public class Reading2 extends AppCompatActivity {
             ivImagen3.setImageResource(imagenesGato[2]);
             ivImagen4.setImageResource(imagenesGato[3]);
 
-            // Establece la respuesta correcta según la pregunta actual. Esto asume
-            // que el índice de la imagen correcta coincide con el índice de la pregunta.
-            // Cambia esto si tus datos están estructurados de manera diferente.
             respuestaCorrecta = preguntaActual;
         } else {
             Toast.makeText(this, "Juego terminado. Puntuación final: " + puntos, Toast.LENGTH_SHORT).show();
-            // Agrega código para reiniciar el juego o cambiar de actividad.
+            usuario.setPuntuacion(puntos);
+            usuario.setVidas(vidasRestantes);
+            usuariosDAO.actualizarUsuario(usuario);
+            Intent intent = new Intent(this, Menu.class);
+            intent.putExtra("idUsuario", usuario.getId());
+            startActivity(intent);
+            finish();
         }
     }
 
     private void verificarRespuesta(int respuestaUsuario) {
         if (respuestaUsuario == respuestaCorrecta) {
             puntos += 3;
-            tvPuntos.setText(String.valueOf(puntos));
+            actualizarPuntos();
             Toast.makeText(this, "¡Correcto!", Toast.LENGTH_SHORT).show();
             preguntaActual++;
             cargarPregunta();
         } else {
             vidasRestantes--;
+            actualizarVidas();
             if (vidasRestantes >= 0) {
-                // El acceso al array vidas no está presente en este código. Tendrás que agregarlo.
                 Toast.makeText(this, "Incorrecto. Te quedan " + (vidasRestantes + 1) + " vidas.", Toast.LENGTH_SHORT).show();
                 if (vidasRestantes == 0) {
                     Toast.makeText(this, "¡Game Over!", Toast.LENGTH_SHORT).show();
-                    finish(); // O reinicia el juego.
+                    usuario.setPuntuacion(puntos);
+                    usuario.setVidas(vidasRestantes);
+                    usuariosDAO.actualizarUsuario(usuario);
+                    finish();
                 }
             }
         }
@@ -151,6 +192,7 @@ public class Reading2 extends AppCompatActivity {
 
     public void botonAtras() {
         Intent intent = new Intent(this, Menu.class);
+        intent.putExtra("idUsuario", usuario.getId());
         startActivity(intent);
         finish();
     }
