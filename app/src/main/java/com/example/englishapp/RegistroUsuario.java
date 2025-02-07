@@ -2,6 +2,7 @@ package com.example.englishapp;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -15,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.englishapp.DAO.UsuariosDAO;
+import com.jcraft.jsch.jbcrypt.BCrypt;
 
 
 public class RegistroUsuario extends AppCompatActivity {
@@ -23,6 +25,7 @@ public class RegistroUsuario extends AppCompatActivity {
     private ImageButton[] avatares;
     private int avatarSeleccionado = -1;
     private UsuariosDAO usuariosDAO;
+    private MediaPlayer sonidoRegistroOk;
 
 
     @Override
@@ -38,6 +41,10 @@ public class RegistroUsuario extends AppCompatActivity {
         inicializarVariables();
         inicializarAvatares();
         usuariosDAO = new UsuariosDAO(this);
+        sonidoRegistroOk = MediaPlayer.create(this,R.raw.registro_exitoso);
+        if (sonidoRegistroOk == null) {
+            Toast.makeText(this, "Error al cargar sonido de registro", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void crearTablas(View view){
@@ -78,7 +85,7 @@ public class RegistroUsuario extends AppCompatActivity {
         String lastname = etApe.getText().toString().trim();
         String username = etUser.getText().toString().trim();
         String password = etPass.getText().toString().trim();
-        String password2 = etPass2.getText().toString().trim(); // Obtener la confirmación de contraseña
+        String password2 = etPass2.getText().toString().trim();
 
         if (name.isEmpty() || lastname.isEmpty() || username.isEmpty() || password.isEmpty() || password2.isEmpty()) {
             Toast.makeText(this, R.string.error_campos_vacios, Toast.LENGTH_SHORT).show();
@@ -100,8 +107,16 @@ public class RegistroUsuario extends AppCompatActivity {
             return;
         }
 
-        boolean okCreate = usuariosDAO.registrarUsuario(username, password, name, lastname, avatarSeleccionado);
+        // Hashea la contraseña *antes* de guardarla
+        String passwordHasheada = BCrypt.hashpw(password, BCrypt.gensalt());
+
+        // Llama a registrarUsuario en el DAO con la contraseña hasheada
+        boolean okCreate = usuariosDAO.registrarUsuario(username, passwordHasheada, name, lastname, avatarSeleccionado);
+
         if (okCreate) {
+            if (sonidoRegistroOk != null) {
+                sonidoRegistroOk.start();
+            }
             Toast.makeText(this, R.string.registro_exitoso, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(RegistroUsuario.this, InicioSesion.class);
             startActivity(intent);
@@ -114,5 +129,14 @@ public class RegistroUsuario extends AppCompatActivity {
     public void botonExit(View view) {
         Intent intent = new Intent(RegistroUsuario.this, InicioSesion.class);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoRegistroOk != null) {
+            sonidoRegistroOk.release();
+            sonidoRegistroOk = null;
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.example.englishapp.Vocabulario;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.englishapp.DAO.UsuariosDAO;
@@ -22,7 +24,9 @@ public class Vocabulario3 extends AppCompatActivity {
     private int puntos;
     private int indiceParteCuerpo = 0;
     private int vidas;
-    private int nivelCompletado; // Nivel completado
+    private int nivelVocabulario; // Nivel de vocabulario
+    private MediaPlayer sonidoNivelCompletado;
+    private MediaPlayer sonidoError;
     private EditText etNombreParte;
     private ImageView imagen, ivAvatar;
     private TextView tvPuntos, tvUsuario;
@@ -32,10 +36,18 @@ public class Vocabulario3 extends AppCompatActivity {
 
     private int[] imagenes = {R.drawable.boca, R.drawable.cuello, R.drawable.pie, R.drawable.mano};
     private String[] respuestasCorrectas = {"mouth", "neck", "foot", "hand"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vocabulario3);
+
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
+        sonidoError = MediaPlayer.create(this, R.raw.fallo);
+
+        if (sonidoNivelCompletado == null || sonidoError == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
 
         usuariosDAO = new UsuariosDAO(this);
         inicializarVariables();
@@ -65,7 +77,7 @@ public class Vocabulario3 extends AppCompatActivity {
             if (usuario != null) {
                 puntos = usuario.getPuntuacion();
                 vidas = usuario.getVidas();
-                nivelCompletado = usuario.getNivelCompletado(); // Cargar nivel completado
+                nivelVocabulario = usuario.getNivelVocabulario();
                 establecerImagenAvatar(usuario.getAvatar());
                 actualizarPuntos();
                 actualizarVidas();
@@ -117,11 +129,18 @@ public class Vocabulario3 extends AppCompatActivity {
                 imagen.setImageResource(imagenes[indiceParteCuerpo]);
             } else {
                 Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
-                // Actualizar nivel completado y guardarlo
-                nivelCompletado++;
-                usuario.setNivelCompletado(nivelCompletado);
-                usuariosDAO.actualizarUsuario(usuario);
-                // Volver al menú
+
+                // Actualiza el nivel de vocabulario *solo si es necesario*
+                if (nivelVocabulario < 6) { // Asumiendo 6 niveles máximos
+                    nivelVocabulario++;
+                    usuario.setNivelVocabulario(nivelVocabulario);
+                    usuariosDAO.actualizarUsuario(usuario);
+
+                    if (sonidoNivelCompletado != null) {
+                        sonidoNivelCompletado.start();
+                    }
+                }
+
                 Intent intent = new Intent(this, Menu.class);
                 intent.putExtra("idUsuario", usuario.getId());
                 startActivity(intent);
@@ -129,6 +148,9 @@ public class Vocabulario3 extends AppCompatActivity {
             }
         } else {
             vidas--;
+            if (sonidoError != null) {
+                sonidoError.start();
+            }
             Toast.makeText(this, "Incorrecto. La respuesta correcta es " + respuestasCorrectas[indiceParteCuerpo] + ". Vidas restantes: " + vidas, Toast.LENGTH_SHORT).show();
             actualizarVidas();
 
@@ -145,6 +167,7 @@ public class Vocabulario3 extends AppCompatActivity {
         etNombreParte.setText("");
         guardarEstadoJuego();
     }
+
 
     private void actualizarPuntos() {
         tvPuntos.setText("Puntos: " + puntos);
@@ -170,5 +193,18 @@ public class Vocabulario3 extends AppCompatActivity {
         intent.putExtra("idUsuario", usuario.getId());
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoNivelCompletado != null) {
+            sonidoNivelCompletado.release();
+            sonidoNivelCompletado = null;
+        }
+        if (sonidoError != null) {
+            sonidoError.release();
+            sonidoError = null;
+        }
     }
 }

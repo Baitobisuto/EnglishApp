@@ -2,6 +2,7 @@ package com.example.englishapp.Vocabulario;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -26,7 +27,9 @@ public class Vocabulario4 extends AppCompatActivity {
 
     private int puntos;
     private int vidas;
-    private int nivelCompletado;  // Nivel completado
+    private int nivelVocabulario; // Nivel de vocabulario
+    private MediaPlayer sonidoNivelCompletado;
+    private MediaPlayer sonidoError;
     private int numeroCorrecto = 1;
     private EditText etRespuesta;
     private TextView tvPuntos, tvUsuario;
@@ -48,6 +51,13 @@ public class Vocabulario4 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
+        sonidoError = MediaPlayer.create(this, R.raw.fallo);
+
+        if (sonidoNivelCompletado == null || sonidoError == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
+
         usuariosDAO = new UsuariosDAO(this); // Inicializar UsuariosDAO
         inicializarVariables();
         cargarDatosUsuario(); // Cargar datos del usuario
@@ -63,9 +73,9 @@ public class Vocabulario4 extends AppCompatActivity {
         botonComprobar = findViewById(R.id.id_boton);
 
         vidasBotones = new ImageButton[]{
-                findViewById(R.id.imageButton14),
-                findViewById(R.id.imageButton15),
-                findViewById(R.id.imageButton16)
+                findViewById(R.id.imageButton),
+                findViewById(R.id.imageButton5),
+                findViewById(R.id.imageButton13)
         };
     }
 
@@ -78,7 +88,7 @@ public class Vocabulario4 extends AppCompatActivity {
             if (usuario != null) {
                 puntos = usuario.getPuntuacion();
                 vidas = usuario.getVidas();
-                nivelCompletado = usuario.getNivelCompletado();
+                nivelVocabulario = usuario.getNivelVocabulario();
                 establecerImagenAvatar(usuario.getAvatar());
                 actualizarPuntos();
                 actualizarVidas();
@@ -133,10 +143,17 @@ public class Vocabulario4 extends AppCompatActivity {
                 cambiarImagenNumero();
             } else {
                 Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
-                // Actualizar nivel completado y guardarlo
-                nivelCompletado++;
-                usuario.setNivelCompletado(nivelCompletado);
-                usuariosDAO.actualizarUsuario(usuario);
+
+                // Actualiza el nivel de vocabulario *solo si es necesario*
+                if (nivelVocabulario < 6) { // Asumiendo 6 niveles máximos
+                    nivelVocabulario++;
+                    usuario.setNivelVocabulario(nivelVocabulario);
+                    usuariosDAO.actualizarUsuario(usuario);
+
+                    if (sonidoNivelCompletado != null) {
+                        sonidoNivelCompletado.start();
+                    }
+                }
 
                 Intent intent = new Intent(this, Menu.class);
                 intent.putExtra("idUsuario", usuario.getId());
@@ -151,6 +168,9 @@ public class Vocabulario4 extends AppCompatActivity {
             }
 
             vidas--;
+            if (sonidoError != null) {
+                sonidoError.start();
+            }
             Toast.makeText(this, "Incorrecto. Puntos: " + puntos, Toast.LENGTH_SHORT).show();
             actualizarVidas();
 
@@ -211,5 +231,17 @@ public class Vocabulario4 extends AppCompatActivity {
         intent.putExtra("idUsuario", usuario.getId()); // Pasar ID del usuario
         startActivity(intent);
         finish();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoNivelCompletado != null) {
+            sonidoNivelCompletado.release();
+            sonidoNivelCompletado = null;
+        }
+        if (sonidoError != null) {
+            sonidoError.release();
+            sonidoError = null;
+        }
     }
 }

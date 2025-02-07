@@ -2,6 +2,7 @@ package com.example.englishapp.Vocabulario;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -19,13 +20,15 @@ import com.example.englishapp.Usuario;
 public class Vocabulario5 extends AppCompatActivity {
 
     private ImageView imagenEstancia, ivAvatar;
-    private TextView nombreEstancia, tvPuntos, tvUsuario;
+    private TextView nombreEstancia, tvPuntos; // tvUsuario eliminado
     private int puntos;
     private int vidas = 3;
-    private int nivelCompletado;
+    private int nivelVocabulario; // Nivel de vocabulario
+    private MediaPlayer sonidoNivelCompletado;
+    private MediaPlayer sonidoError;
     private String respuestaCorrecta;
     private int indiceEstanciaActual = 0;
-    private ImageButton[] botonVidas;
+    private ImageButton[] vidasBotones;
     private String[] estancias = {"Kitchen", "Dining Room", "Double bedroom", "Bedroom", "Bathroom"};
     private int[] imagenesConBordeVerde = {
             R.drawable.kitchenverde, R.drawable.diningverde, R.drawable.room1verde, R.drawable.bathroomverde, R.drawable.room2verde};
@@ -35,15 +38,23 @@ public class Vocabulario5 extends AppCompatActivity {
     private Usuario usuario;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vocabulario5);
 
 
-        usuariosDAO = new UsuariosDAO(this); // Inicializar UsuariosDAO
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
+        sonidoError = MediaPlayer.create(this, R.raw.fallo);
+
+        if (sonidoNivelCompletado == null || sonidoError == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
+
+        usuariosDAO = new UsuariosDAO(this);
         inicializarElementos();
-        cargarDatosUsuario(); // Cargar datos del usuario
+        cargarDatosUsuario();
         generarPregunta();
     }
 
@@ -51,10 +62,9 @@ public class Vocabulario5 extends AppCompatActivity {
         imagenEstancia = findViewById(R.id.imageViewNumero);
         nombreEstancia = findViewById(R.id.textView5);
         tvPuntos = findViewById(R.id.tvPuntos);
-        tvUsuario = findViewById(R.id.textView7);
         ivAvatar = findViewById(R.id.iv_avatar);
-        botonVidas = new ImageButton[]{
-                findViewById(R.id.imageButton),
+        vidasBotones = new ImageButton[]{
+                findViewById(R.id.imageButton), // IDs actualizados
                 findViewById(R.id.imageButton5),
                 findViewById(R.id.imageButton13)
         };
@@ -69,7 +79,7 @@ public class Vocabulario5 extends AppCompatActivity {
             if (usuario != null) {
                 puntos = usuario.getPuntuacion();
                 vidas = usuario.getVidas();
-                nivelCompletado = usuario.getNivelCompletado();
+                nivelVocabulario = usuario.getNivelVocabulario();
                 establecerImagenAvatar(usuario.getAvatar());
                 actualizarPuntos();
                 actualizarVidas();
@@ -110,7 +120,7 @@ public class Vocabulario5 extends AppCompatActivity {
     public void generarPregunta() {
         respuestaCorrecta = estancias[indiceEstanciaActual];
         nombreEstancia.setText(respuestaCorrecta);
-        imagenEstancia.setImageResource(R.drawable.casa); // Imagen por defecto
+        imagenEstancia.setImageResource(R.drawable.casa);
     }
 
     public void verificarRespuesta(View view) {
@@ -123,51 +133,70 @@ public class Vocabulario5 extends AppCompatActivity {
             opcionSeleccionada = 1;
         } else if (id == R.id.botonroom1) {
             opcionSeleccionada = 2;
-        } else if (id == R.id.botonBathroom) {
-            opcionSeleccionada = 4; // Corregido el índice
         } else if (id == R.id.botonRoom2) {
-            opcionSeleccionada = 3; // Corregido el índice
+            opcionSeleccionada = 4;
+        } else if (id == R.id.botonBathroom) {
+            opcionSeleccionada = 3;
         }
 
         if (respuestaCorrecta.equalsIgnoreCase(estancias[opcionSeleccionada])) {
             puntos += 3;
             imagenEstancia.setImageResource(imagenesConBordeVerde[opcionSeleccionada]);
             Toast.makeText(this, "¡Correcto! Puntos: " + puntos, Toast.LENGTH_SHORT).show();
-        } else {
-            puntos -= 3;
-            vidas--;
-            imagenEstancia.setImageResource(imagenesConBordeRojo[opcionSeleccionada]);
-            Toast.makeText(this, "¡Incorrecto! Puntos: " + puntos + " Vidas restantes: " + vidas, Toast.LENGTH_SHORT).show();
-            actualizarVidas();
-        }
 
-        actualizarPuntos();
-
-        if (vidas <= 0) {
-            Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
-            // Guardar puntos y vidas antes de finalizar
-            usuario.setPuntuacion(puntos);
-            usuario.setVidas(vidas);
-            usuariosDAO.actualizarUsuario(usuario);
-            finish();
-        } else {
             indiceEstanciaActual++;
+
             if (indiceEstanciaActual >= estancias.length) {
-                indiceEstanciaActual = 0;
-                nivelCompletado++; // Incrementar nivel completado
-                usuario.setNivelCompletado(nivelCompletado); // Guardar nivel completado
-                usuariosDAO.actualizarUsuario(usuario); // Actualizar usuario en la base de datos
-                Toast.makeText(this, "¡Nivel completado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(this, Menu.class);
+                // Juego completado para este nivel de vocabulario
+                Toast.makeText(this, "¡Nivel de vocabulario completado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
+
+                // Actualizar nivelVocabulario *solo si es necesario*
+                if (nivelVocabulario < 6) { // Asumiendo 6 niveles máximos de vocabulario
+                    nivelVocabulario++;
+                    usuario.setNivelVocabulario(nivelVocabulario);
+                    usuariosDAO.actualizarUsuario(usuario);
+
+                    if (sonidoNivelCompletado != null) {
+                        sonidoNivelCompletado.start();
+                    }
+                }
+
+                // Volver al menú (o a la pantalla de niveles)
+                Intent intent = new Intent(this, Menu.class); // O Niveles.class si quieres volver a la pantalla de niveles
                 intent.putExtra("idUsuario", usuario.getId());
                 startActivity(intent);
                 finish();
+
+            } else {
+                generarPregunta(); // Generar nueva pregunta para la siguiente estancia
             }
-            generarPregunta();
+
+        } else {
+            puntos -= 3;
+            vidas--;
+            if (sonidoError != null) {
+                sonidoError.start();
+            }
+            imagenEstancia.setImageResource(imagenesConBordeRojo[opcionSeleccionada]);
+            Toast.makeText(this, "¡Incorrecto! Puntos: " + puntos + " Vidas restantes: " + vidas, Toast.LENGTH_SHORT).show();
+            actualizarVidas();
+
+            if (vidas <= 0) {
+                // Juego terminado por falta de vidas
+                Toast.makeText(this, "¡Juego terminado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
+
+                // Guardar puntos y vidas antes de finalizar
+                usuario.setPuntuacion(puntos);
+                usuario.setVidas(vidas);
+                usuariosDAO.actualizarUsuario(usuario);
+
+                finish();
+            }
         }
+
+        actualizarPuntos();
         guardarEstadoJuego();
     }
-
     private void actualizarPuntos() {
         tvPuntos.setText("Puntos: " + puntos);
     }
@@ -191,5 +220,17 @@ public class Vocabulario5 extends AppCompatActivity {
         intent.putExtra("idUsuario", usuario.getId());
         startActivity(intent);
         finish();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoNivelCompletado != null) {
+            sonidoNivelCompletado.release();
+            sonidoNivelCompletado = null;
+        }
+        if (sonidoError != null) {
+            sonidoError.release();
+            sonidoError = null;
+        }
     }
 }

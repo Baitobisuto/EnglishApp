@@ -1,23 +1,21 @@
 package com.example.englishapp.Vocabulario;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
+
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.englishapp.DAO.UsuariosDAO;
-import com.example.englishapp.Menu;
 import com.example.englishapp.Niveles;
 import com.example.englishapp.R;
 import com.example.englishapp.Usuario;
@@ -32,7 +30,9 @@ public class Vocabulario1 extends AppCompatActivity {
     private ImageView ivAvatar;
     private int avatar;
     private int idUsuario;
-    private int nivelCompletado;
+    private int nivelVocabulario; // Nivel de vocabulario
+    private MediaPlayer sonidoNivelCompletado; // Sonido nivel completado
+    private MediaPlayer sonidoError; // Sonido error
 
     private int[] imagenes = {R.drawable.fresa, R.drawable.aguacate, R.drawable.manzana, R.drawable.naranja};
     private String[] respuestas = {"fresa", "aguacate", "manzana", "naranja"};
@@ -49,6 +49,12 @@ public class Vocabulario1 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
+        sonidoError = MediaPlayer.create(this, R.raw.fallo);
+
+        if (sonidoNivelCompletado == null || sonidoError == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
 
         usuariosDAO = new UsuariosDAO(this);
         inicializaVariables();
@@ -65,7 +71,7 @@ public class Vocabulario1 extends AppCompatActivity {
                 avatar = usuario.getAvatar();
                 puntos = usuario.getPuntuacion();
                 vidas = usuario.getVidas();
-                nivelCompletado = usuario.getNivelCompletado();
+                nivelVocabulario = usuario.getNivelVocabulario(); // Carga el nivel de vocabulario
 
                 establecerImagenAvatar(avatar);
                 actualizarPuntos();
@@ -80,7 +86,6 @@ public class Vocabulario1 extends AppCompatActivity {
             finish();
         }
     }
-
 
     public void inicializaVariables() {
         tvPuntos = findViewById(R.id.tv_puntos);
@@ -131,17 +136,30 @@ public class Vocabulario1 extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "¡Juego terminado! Vamos al siguiente nivel.", Toast.LENGTH_SHORT).show();
 
-                nivelCompletado++; // Incrementa el nivel completado
-                usuario.setNivelCompletado(nivelCompletado); // Actualiza el objeto usuario
-                usuariosDAO.actualizarUsuario(usuario); // Actualiza la base de datos
+                if (nivelVocabulario < 6) {
+                    nivelVocabulario++;
+                    usuario.setNivelVocabulario(nivelVocabulario);
+                    usuariosDAO.actualizarUsuario(usuario);
+
+                    if (sonidoNivelCompletado != null) {
+                        sonidoNivelCompletado.start();
+                    }
+                }
+                usuario.setPuntuacion(puntos);
+                usuario.setVidas(vidas);
+                usuariosDAO.actualizarUsuario(usuario);
 
                 Intent intent = new Intent(this, Niveles.class);
                 intent.putExtra("idUsuario", idUsuario);
+                intent.putExtra("tipo_nivel", "vocabulary");
                 startActivity(intent);
                 finish();
             }
         } else {
             vidas--;
+            if (sonidoError != null) {
+                sonidoError.start();
+            }
             Toast.makeText(this, "Incorrecto", Toast.LENGTH_SHORT).show();
             actualizarVidas();
             if (vidas == 0) {
@@ -163,9 +181,11 @@ public class Vocabulario1 extends AppCompatActivity {
         }
         Intent intent = new Intent(this, Niveles.class);
         intent.putExtra("idUsuario", idUsuario);
+        intent.putExtra("tipo_nivel", "vocabulary"); // Envía el tipo de nivel
         startActivity(intent);
         finish();
     }
+
 
     private void actualizarPuntos() {
         tvPuntos.setText("Puntos: " + puntos);
@@ -179,5 +199,25 @@ public class Vocabulario1 extends AppCompatActivity {
 
     public void botonBack(View view) {
         finish();
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        cargarDatosUsuario();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoNivelCompletado != null) {
+            sonidoNivelCompletado.release();
+            sonidoNivelCompletado = null;
+        }
+        if (sonidoError != null) {
+            sonidoError.release();
+            sonidoError = null;
+        }
     }
 }

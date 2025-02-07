@@ -5,17 +5,18 @@ public class Usuario {
     private String nombre;
     private String apellidos;
     private String username;
-    private String password; // Añadido el campo password
+    private String password;
     private int avatar;
     private int puntuacion;
     private int vidas;
-    private int nivelCompletado;
+    private int nivelVocabulario;
+    private int nivelGramatica;
+    private int nivelReading;
 
-    // Constructor vacío (necesario para algunas librerías de serialización)
     public Usuario() {}
 
-    // Constructor con todos los campos (opcional, pero útil)
-    public Usuario(int id, String nombre, String apellidos, String username, String password, int avatar, int puntuacion, int vidas) {
+
+    public Usuario(int id, String nombre, String apellidos, String username, String password, int avatar, int puntuacion, int vidas, int nivelVocabulario, int nivelGramatica, int nivelReading) {
         this.id = id;
         this.nombre = nombre;
         this.apellidos = apellidos;
@@ -24,17 +25,14 @@ public class Usuario {
         this.avatar = avatar;
         this.puntuacion = puntuacion;
         this.vidas = vidas;
+        this.nivelVocabulario = nivelVocabulario;
+        this.nivelGramatica = nivelGramatica;
+        this.nivelReading = nivelReading;
     }
 
-    public int getNivelCompletado() {
-        return nivelCompletado;
-    }
-
-    public void setNivelCompletado(int nivelCompletado) {
-        this.nivelCompletado = nivelCompletado;
-    }
 
     // Getters y setters para todos los campos
+
     public int getId() {
         return id;
     }
@@ -67,9 +65,13 @@ public class Usuario {
         this.username = username;
     }
 
-    public String getPassword() { return password; }
+    public String getPassword() {
+        return password;
+    }
 
-    public void setPassword(String password) { this.password = password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public int getAvatar() {
         return avatar;
@@ -95,6 +97,30 @@ public class Usuario {
         this.vidas = vidas;
     }
 
+    public int getNivelVocabulario() {
+        return nivelVocabulario;
+    }
+
+    public void setNivelVocabulario(int nivelVocabulario) {
+        this.nivelVocabulario = nivelVocabulario;
+    }
+
+    public int getNivelGramatica() {
+        return nivelGramatica;
+    }
+
+    public void setNivelGramatica(int nivelGramatica) {
+        this.nivelGramatica = nivelGramatica;
+    }
+
+    public int getNivelReading() {
+        return nivelReading;
+    }
+
+    public void setNivelReading(int nivelReading) {
+        this.nivelReading = nivelReading;
+    }
+
     @Override
     public String toString() {
         return "Usuario{" +
@@ -106,6 +132,9 @@ public class Usuario {
                 ", avatar=" + avatar +
                 ", puntuacion=" + puntuacion +
                 ", vidas=" + vidas +
+                ", nivelVocabulario=" + nivelVocabulario +
+                ", nivelGramatica=" + nivelGramatica +
+                ", nivelReading=" + nivelReading +
                 '}';
     }
 }

@@ -1,6 +1,7 @@
 package com.example.englishapp.Gramatica;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -32,7 +33,9 @@ public class Gramatica2 extends AppCompatActivity {
     private ImageButton btBack, btOk;
     private int puntos = 0;
     private int vidasRestantes = 3;
-    private int nivelCompletado;
+    private int nivelGramatica; // Nivel de gramática
+    private MediaPlayer sonidoNivelCompletado;
+    private MediaPlayer sonidoError;
     private UsuariosDAO usuariosDAO;
     private Usuario usuario;
     private ImageView ivAvatar; // Declaración del ImageView
@@ -56,7 +59,12 @@ public class Gramatica2 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
+        sonidoError = MediaPlayer.create(this, R.raw.fallo);
 
+        if (sonidoNivelCompletado == null || sonidoError == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
         usuariosDAO = new UsuariosDAO(this);
         inicializarVariables();
         cargarDatosUsuario();
@@ -101,7 +109,7 @@ public class Gramatica2 extends AppCompatActivity {
             if (usuario != null) {
                 puntos = usuario.getPuntuacion();
                 vidasRestantes = usuario.getVidas();
-                nivelCompletado = usuario.getNivelCompletado();
+                nivelGramatica = usuario.getNivelGramatica();
                 establecerImagenAvatar(usuario.getAvatar());
                 actualizarPuntos();
                 actualizarVidas();
@@ -156,9 +164,16 @@ public class Gramatica2 extends AppCompatActivity {
             etRespuesta.setText("");
         } else {
             Toast.makeText(this, "Juego terminado. Puntuación final: " + puntos, Toast.LENGTH_SHORT).show();
-            nivelCompletado++;
-            usuario.setNivelCompletado(nivelCompletado);
-            usuariosDAO.actualizarUsuario(usuario);
+            if (nivelGramatica < 5) {
+                nivelGramatica++;
+                usuario.setNivelGramatica(nivelGramatica);
+                usuariosDAO.actualizarUsuario(usuario);
+
+                if (sonidoNivelCompletado != null) {
+                    sonidoNivelCompletado.start();
+                }
+            }
+
             Intent intent = new Intent(this, Menu.class);
             intent.putExtra("idUsuario", usuario.getId());
             startActivity(intent);
@@ -188,6 +203,9 @@ public class Gramatica2 extends AppCompatActivity {
             cargarFrase();
         } else {
             vidasRestantes--;
+            if (sonidoError != null) {
+                sonidoError.start();
+            }
             actualizarVidas();
             if (vidasRestantes >= 0) {
                 Toast.makeText(this, "Incorrecto. Te quedan " + (vidasRestantes + 1) + " vidas.", Toast.LENGTH_SHORT).show();
@@ -207,5 +225,17 @@ public class Gramatica2 extends AppCompatActivity {
         intent.putExtra("idUsuario", usuario.getId());
         startActivity(intent);
         finish();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoNivelCompletado != null) {
+            sonidoNivelCompletado.release();
+            sonidoNivelCompletado = null;
+        }
+        if (sonidoError != null) {
+            sonidoError.release();
+            sonidoError = null;
+        }
     }
 }

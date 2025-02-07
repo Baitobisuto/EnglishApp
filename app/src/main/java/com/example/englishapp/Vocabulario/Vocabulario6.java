@@ -2,6 +2,7 @@ package com.example.englishapp.Vocabulario;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -28,9 +29,13 @@ public class Vocabulario6 extends AppCompatActivity {
     private ImageView ivAvatar;
     private int puntos;
     private int vidas = 3;
-    private int nivelCompletado;
+    private int nivelVocabulario; // Nivel de vocabulario
+    private MediaPlayer sonidoNivelCompletado;
+    private MediaPlayer sonidoError;
     private int respuestaCorrectaIndice;
+    private int preguntasCorrectasNivelActual = 0;
     private UsuariosDAO usuariosDAO;
+    private int totalPreguntasNivel = 3;
     private Usuario usuario;
 
     private String[] frutas = {"Manzana", "Fresa", "Plátano"};
@@ -47,12 +52,18 @@ public class Vocabulario6 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
+        sonidoError = MediaPlayer.create(this, R.raw.fallo);
+
+        if (sonidoNivelCompletado == null || sonidoError == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
+
         usuariosDAO = new UsuariosDAO(this);
         inicializarVariables();
-        cargarDatosUsuario(); // Cargar datos del usuario
+        cargarDatosUsuario();
         cargarPregunta();
     }
-
 
     private void inicializarVariables() {
         textViewPregunta = findViewById(R.id.textView);
@@ -80,7 +91,7 @@ public class Vocabulario6 extends AppCompatActivity {
             if (usuario != null) {
                 puntos = usuario.getPuntuacion();
                 vidas = usuario.getVidas();
-                nivelCompletado = usuario.getNivelCompletado();
+                nivelVocabulario = usuario.getNivelVocabulario();
                 establecerImagenAvatar(usuario.getAvatar());
                 actualizarPuntos();
                 actualizarVidas();
@@ -164,10 +175,56 @@ public class Vocabulario6 extends AppCompatActivity {
         if (respuestaUsuario == respuestaCorrectaIndice) {
             puntos += 3;
             Toast.makeText(this, "¡Correcto!", Toast.LENGTH_SHORT).show();
+
+            preguntasCorrectasNivelActual++; // Incrementar el contador de preguntas correctas
+
+            if (preguntasCorrectasNivelActual >= totalPreguntasNivel) {
+                // Nivel completado
+                Toast.makeText(this, "¡Nivel de vocabulario completado! Puntos finales: " + puntos, Toast.LENGTH_SHORT).show();
+
+                // Actualizar nivelVocabulario *solo si es necesario*
+                if (nivelVocabulario < 6) { // Asumiendo 6 niveles máximos
+                    nivelVocabulario++;
+                    usuario.setNivelVocabulario(nivelVocabulario);
+                    usuariosDAO.actualizarUsuario(usuario);
+
+                    if (sonidoNivelCompletado != null) {
+                        sonidoNivelCompletado.start();
+                    }
+                }
+
+                Intent intent = new Intent(this, Menu.class);
+                intent.putExtra("idUsuario", usuario.getId());
+                startActivity(intent);
+                finish();
+
+            } else {
+                cargarPregunta(); // Cargar la siguiente pregunta
+            }
+
         } else {
             puntos -= 3;
             vidas--;
+            if (sonidoError != null) {
+                sonidoError.start();
+            }
             Toast.makeText(this, "¡Incorrecto!", Toast.LENGTH_SHORT).show();
+
+            actualizarVidas();
+
+            if (vidas <= 0) {
+                // Juego terminado por falta de vidas
+                Toast.makeText(this, "Juego terminado, no tienes más vidas.", Toast.LENGTH_LONG).show();
+
+                // Guardar puntos y vidas antes de finalizar
+                usuario.setPuntuacion(puntos);
+                usuario.setVidas(vidas);
+                usuariosDAO.actualizarUsuario(usuario);
+
+                finish();
+            } else {
+                cargarPregunta(); // Cargar la siguiente pregunta
+            }
         }
 
         textViewPuntos.setText("Puntos: " + puntos);
@@ -177,19 +234,6 @@ public class Vocabulario6 extends AppCompatActivity {
             usuario.setVidas(vidas);
             usuariosDAO.actualizarUsuario(usuario);
         }
-
-        actualizarVidas();
-
-        if (vidas <= 0) {
-            Toast.makeText(this, "Juego terminado, no tienes más vidas.", Toast.LENGTH_LONG).show();
-            // Guardar puntos y vidas antes de finalizar
-            usuario.setPuntuacion(puntos);
-            usuario.setVidas(vidas);
-            usuariosDAO.actualizarUsuario(usuario);
-            finish();
-        } else {
-            cargarPregunta();
-        }
     }
 
     public void botonExit(View view) {
@@ -197,5 +241,17 @@ public class Vocabulario6 extends AppCompatActivity {
         intent.putExtra("idUsuario", usuario.getId());
         startActivity(intent);
         finish();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoNivelCompletado != null) {
+            sonidoNivelCompletado.release();
+            sonidoNivelCompletado = null;
+        }
+        if (sonidoError != null) {
+            sonidoError.release();
+            sonidoError = null;
+        }
     }
 }

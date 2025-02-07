@@ -118,9 +118,10 @@ public class UsuariosDAO extends ConexionMethods {
                     usuario.setPassword(resultSet.getString("password"));
                     usuario.setAvatar(resultSet.getInt("avatar"));
                     usuario.setPuntuacion(resultSet.getInt("puntuacion"));
-                    usuario.setVidas(resultSet.getInt("vidas"));// Recuperar las vidas
+                    usuario.setVidas(resultSet.getInt("vidas"));
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

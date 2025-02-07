@@ -3,6 +3,7 @@ package com.example.englishapp;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -19,6 +20,9 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.englishapp.DAO.UsuariosDAO;
 import com.example.englishapp.Gramatica.Gramatica1;
 import com.example.englishapp.Gramatica.Gramatica2;
+import com.example.englishapp.Gramatica.Gramatica3;
+import com.example.englishapp.Gramatica.Gramatica4;
+import com.example.englishapp.Gramatica.Gramatica5;
 import com.example.englishapp.Reading.Reading1;
 import com.example.englishapp.Reading.Reading2;
 import com.example.englishapp.Vocabulario.Vocabulario1;
@@ -32,12 +36,14 @@ import com.example.englishapp.Vocabulario.Vocabulario6;
 public class Niveles extends AppCompatActivity {
 
     private ImageButton[] botonesNivel = new ImageButton[6]; // Array para los botones de nivel
-    private int nivelCompletado;
     private int puntuacion, vidas, avatar, idUsuario; // Incluir idUsuario
     private String nombreUsuario;
     private TextView tvNombreUsuario, tvPuntuacion;
     private ImageView ivAvatar, vida1, vida2, vida3;
     private UsuariosDAO usuariosDAO;
+    private MediaPlayer sonidoSubeNivel,sonidoNivelCompletado;
+    private int nivelVocabulario, nivelGramatica, nivelReading;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +55,12 @@ public class Niveles extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        sonidoSubeNivel = MediaPlayer.create(this, R.raw.sube_nivel);
+        sonidoNivelCompletado = MediaPlayer.create(this, R.raw.nivel_completado);
 
+        if (sonidoSubeNivel == null || sonidoNivelCompletado == null) {
+            Toast.makeText(this, "Error al cargar sonidos", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -122,61 +133,87 @@ public class Niveles extends AppCompatActivity {
         vida1 = findViewById(R.id.vida1);
         vida2 = findViewById(R.id.vida2);
         vida3 = findViewById(R.id.vida3);
+
+        sonidoSubeNivel = MediaPlayer.create(this, R.raw.sube_nivel);
+        if (sonidoSubeNivel == null) {
+            Toast.makeText(this, "Error al cargar el sonidos", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void actualizarNiveles() {
         Usuario usuario = usuariosDAO.obtenerUsuarioPorId(idUsuario);
         if (usuario != null) {
-            nivelCompletado = usuario.getNivelCompletado();
+            nivelVocabulario = usuario.getNivelVocabulario();
+            nivelGramatica = usuario.getNivelGramatica();
+            nivelReading = usuario.getNivelReading();
         } else {
-            nivelCompletado = 0;
+            nivelVocabulario = 1; // Valores predeterminados si el usuario es null
+            nivelGramatica = 1;
+            nivelReading = 1;
         }
-        for (int i = 2; i < botonesNivel.length; i++) {
-            actualizarNivel(botonesNivel[nivelCompletado], i + 1 );
+
+        String tipoNivel = getIntent().getStringExtra("tipo_nivel");
+        int nivelMaximo = 0;
+
+        if (tipoNivel != null) {
+            switch (tipoNivel) {
+                case "vocabulary":
+                    nivelMaximo = nivelVocabulario;
+                    break;
+                case "grammar":
+                    nivelMaximo = nivelGramatica;
+                    break;
+                case "reading":
+                    nivelMaximo = nivelReading;
+                    break;
+            }
+        }
+
+        for (int i = 0; i < botonesNivel.length; i++) {
+            actualizarNivel(botonesNivel[i], i + 1, nivelMaximo);
         }
     }
 
 
-    public void actualizarNivel(ImageButton boton, int nivel) {
-        boolean habilitado = nivelCompletado >= nivel-1;
+    public void actualizarNivel(ImageButton boton, int nivel, int nivelMaximo) {
+        boolean habilitado = nivelMaximo >= nivel - 1;
         boton.setEnabled(habilitado);
 
-        if (nivel != 1) { // Si no es el nivel 1, entonces busca el candado
-            ImageView candado = null;
+        ImageView candado = null;
 
-            switch (nivel) {
-                case 2:
-                    candado = boton.findViewById(R.id.c2);
-                    break;
-                case 3:
-                    candado = boton.findViewById(R.id.c3);
-                    break;
-                case 4:
-                    candado = boton.findViewById(R.id.c4);
-                    break;
-                case 5:
-                    candado = boton.findViewById(R.id.c5);
-                    break;
-                case 6:
-                    candado = boton.findViewById(R.id.c6);
-                    break;
-                default:
-                    Toast.makeText(this, "Candados no encontrados", Toast.LENGTH_SHORT).show();
-            }
+        switch (nivel) {
+            case 2:
+                candado = boton.findViewById(R.id.c2);
+                break;
+            case 3:
+                candado = boton.findViewById(R.id.c3);
+                break;
+            case 4:
+                candado = boton.findViewById(R.id.c4);
+                break;
+            case 5:
+                candado = boton.findViewById(R.id.c5);
+                break;
+            case 6:
+                candado = boton.findViewById(R.id.c6);
+                break;
+        }
 
-            if (candado != null) {
-                if (habilitado) {
-                    boton.clearColorFilter();
-                    candado.setVisibility(View.INVISIBLE);
-                } else {
-                    boton.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-                    candado.setVisibility(View.VISIBLE);
+        if (candado != null) {
+            if (habilitado) {
+                boton.clearColorFilter();
+                candado.setVisibility(View.INVISIBLE);
+                if (sonidoSubeNivel != null) {
+                    sonidoSubeNivel.start();
                 }
             } else {
-                Toast.makeText(this, "Candado no encontrado para el nivel " + nivel, Toast.LENGTH_SHORT).show();
+                boton.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+                candado.setVisibility(View.VISIBLE);
             }
         }
     }
+
 
     public void actualizarVidas() {
         vida1.setVisibility(vidas >= 1 ? View.VISIBLE : View.INVISIBLE);
@@ -187,6 +224,7 @@ public class Niveles extends AppCompatActivity {
     public void iniciarNivel(View view) {
         Intent intent = null;
         int nivel = -1;
+        String tipoNivel = getIntent().getStringExtra("tipo_nivel");
 
         if (view != null) {
             int viewId = view.getId();
@@ -198,55 +236,59 @@ public class Niveles extends AppCompatActivity {
                 }
             }
 
-            if (nivel != -1) {
-                String tipoNivel = getIntent().getStringExtra("tipo_nivel");
-
-                if (tipoNivel != null) {
-                    switch (tipoNivel) {
-                        case "reading":
-                            switch (nivel) {
-                                case 1:
-                                    intent = new Intent(Niveles.this, Reading1.class);
-                                    break;
-                                case 2:
-                                    intent = new Intent(Niveles.this, Reading2.class);
-                                    break;
-                            }
-                            break;
-                        case "grammar":
-                            switch (nivel) {
-                                case 1:
-                                    intent = new Intent(Niveles.this, Gramatica1.class);
-                                    break;
-                                case 2:
-                                    intent = new Intent(Niveles.this, Gramatica2.class);
-                                    break;
-                                // ... (cases para los demás niveles de gramática)
-                            }
-                            break;
-                        case "vocabulary":
-                            switch (nivel) {
-                                case 1:
-                                    intent = new Intent(Niveles.this, Vocabulario1.class);
-                                    break;
-                                case 2:
-                                    intent = new Intent(Niveles.this, Vocabulario2.class);
-                                    break;
-                                case 3:
-                                    intent = new Intent(Niveles.this, Vocabulario3.class);
-                                    break;
-                                case 4:
-                                    intent = new Intent(Niveles.this, Vocabulario4.class);
-                                    break;
-                                case 5:
-                                    intent = new Intent(Niveles.this, Vocabulario5.class);
-                                    break;
-                                case 6:
-                                    intent = new Intent(Niveles.this, Vocabulario6.class);
-                                    break;
-                            }
-                            break;
-                    }
+            if (nivel != -1 && tipoNivel != null) {
+                switch (tipoNivel) {
+                    case "reading":
+                        switch (nivel) {
+                            case 1:
+                                intent = new Intent(Niveles.this, Reading1.class);
+                                break;
+                            case 2:
+                                intent = new Intent(Niveles.this, Reading2.class);
+                                break;
+                        }
+                        break;
+                    case "grammar":
+                        switch (nivel) {
+                            case 1:
+                                intent = new Intent(Niveles.this, Gramatica1.class);
+                                break;
+                            case 2:
+                                intent = new Intent(Niveles.this, Gramatica2.class);
+                                break;
+                            case 3:
+                                intent = new Intent(Niveles.this, Gramatica3.class);
+                                break;
+                            case 4:
+                                intent = new Intent(Niveles.this, Gramatica4.class);
+                                break;
+                            case 5:
+                                intent = new Intent(Niveles.this, Gramatica5.class);
+                                break;
+                        }
+                        break;
+                    case "vocabulary":
+                        switch (nivel) {
+                            case 1:
+                                intent = new Intent(Niveles.this, Vocabulario1.class);
+                                break;
+                            case 2:
+                                intent = new Intent(Niveles.this, Vocabulario2.class);
+                                break;
+                            case 3:
+                                intent = new Intent(Niveles.this, Vocabulario3.class);
+                                break;
+                            case 4:
+                                intent = new Intent(Niveles.this, Vocabulario4.class);
+                                break;
+                            case 5:
+                                intent = new Intent(Niveles.this, Vocabulario5.class);
+                                break;
+                            case 6:
+                                intent = new Intent(Niveles.this, Vocabulario6.class);
+                                break;
+                        }
+                        break;
                 }
             } else {
                 Toast.makeText(this, R.string.selecciona_nivel, Toast.LENGTH_SHORT).show();
@@ -268,4 +310,15 @@ public class Niveles extends AppCompatActivity {
         intent.putExtra("idUsuario", idUsuario);
         startActivity(intent);
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sonidoSubeNivel != null) {
+            sonidoSubeNivel.release();
+            sonidoSubeNivel = null;
+        }
+    }
+
+
 }
